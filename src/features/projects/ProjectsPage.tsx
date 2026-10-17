@@ -66,7 +66,7 @@ export default function ProjectsPage() {
   const archived = projects.filter((p) => p.archived);
 
   return (
-    <section className="mx-auto grid max-w-6xl gap-6">
+    <section className="mx-auto grid max-w-6xl grid-cols-1 gap-6">
       <header className="flex items-center justify-between gap-3">
         <h1 className="text-2xl">Projects</h1>
         <Button variant="primary" onClick={() => ui.setNewProjectOpen(true)}>

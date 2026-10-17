@@ -52,7 +52,7 @@ function ProjectDetail({ project }: { project: Project }) {
   const { toast } = useToast();
 
   return (
-    <section className="mx-auto grid max-w-[1400px] gap-5" data-pc={project.color}>
+    <section className="mx-auto grid max-w-[1400px] grid-cols-1 gap-5" data-pc={project.color}>
       <header className="flex flex-wrap items-start gap-4">
         <span
           className="grid size-12 shrink-0 place-items-center rounded-xl bg-(--pc-tint) text-2xl"

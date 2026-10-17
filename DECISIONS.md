@@ -161,23 +161,50 @@ Ambiguities resolved while building Posedge, and any deviations from [`SPEC.md`]
     then the answer with Copy, Listen and Rewrite. Related questions follow, and a follow-up box stays pinned
     at the bottom. Clicking a task source opens the task editor; a project or milestone source focuses its
     project in the graph.
-48. **Graph, after Obsidian.** Projects, milestones, open tasks (completed ones on request, last 14 days) and
-    review cards are nodes, linked child to parent (card → task → milestone or project). It uses `d3-force`
-    for the layout, drawn on a canvas by a small engine class (`graphEngine.ts`) that redraws only on ticks
-    and interaction.
-    - **Navigation:** drag to pan, scroll or pinch to zoom, drag nodes; it auto-fits until VJ moves the
-      view.
-    - **Hover:** lights the node and its neighbors and fades the rest.
-    - **Citations:** items cited by the latest answer stay lit, with the link to their parent.
-    - **Labels:** project labels always show; task and milestone labels fade in as you zoom and skip spots
-      where they would overlap.
-    - **Reduced motion:** the layout settles before drawing and never animates.
+48. **Graph, after Obsidian.** Nodes are projects, milestones, open tasks (completed ones on request, last 14
+    days), review cards and topics, linked child to parent (card → task → milestone or project).
+    - **Topics** work like Obsidian tags. A topic is a term shared by items in two or more projects, so it
+      bridges them: acronyms (SVA, UVM, C++, LLM) or words of 4+ letters, minus filler and generic task
+      verbs, with light plural stemming. Capped at 40.
+    - **Layout:** `d3-force` with collision spacing, so nodes never overlap; projects get extra room for
+      their labels. Gravity follows the panel's shape and re-spreads when it changes a lot (e.g. full
+      screen).
+    - **Rendering:** a canvas engine class (`graphEngine.ts`) draws only while something moves.
+    - **Interaction:**
+      - smooth zoom (wheel, trackpad pinch, touch pinch, +/−), momentum panning, node dragging with
+        elastic neighbors;
+      - hover fades in the node and its neighbors; new nodes pop in;
+      - keyboard: arrows pan, + and − zoom, 0 fits.
+    - **Auto-fit:** the view keeps framing the graph, around the answers drawer and ask bar, until VJ
+      pans, zooms or drags; Fit resumes it.
+    - **Labels:** project labels try below, then above, then nudged; others only below. Any label that
+      would overlap steps aside unless hovered, selected or lit. Labels stay inside the canvas.
+    - **Search** lights matching nodes, and Enter flies to the first. The latest answer's citations stay
+      lit when there's no search.
+    - **Settings:** Obsidian-style sliders (center, repel and link force, link distance, node size, link
+      thickness, text fade threshold) apply live. They are saved with the filters (Topics, Cards,
+      Completed) in `localStorage`, validated on load.
+    - **Replay growth**, like Obsidian's "Animate", grows the graph in creation order with a date ticker.
+    - **Full screen:** a full-screen view with an answers drawer and a floating ask bar. Escape exits,
+      the page behind is inert and doesn't scroll, and focus returns to the button.
+    - **Reduced motion:** layouts settle before drawing, and zoom, pan, fades, pop-ins and replay
+      movement are instant.
 49. **Look.** After the first version, a neon "JARVIS" HUD that VJ found "AI-looking" and cheap, the Brain
     now uses the app's own tokens and light/dark theme, Inter only and the violet accent: no glow, no custom
     fonts, no scanlines. Project color is always paired with the emoji.
 50. **Access.** `G` then `B` opens the Brain, and `/` focuses the ask box. The canvas has a text summary, and
     the project chips under the graph are the keyboard route to the same project card.
 51. **Not deployed yet.** The Brain lives on the session branch. GitHub Pages is updated only after VJ's OK.
+52. **Layout sweep.** A Playwright sweep of every page at 390px and 1440px (overflow check plus screenshots)
+    found and fixed:
+    - the project page scrolling sideways on phones: top-level page grids now use `grid-cols-1`, so
+      wide children scroll inside instead of stretching the page;
+    - Settings' daily-capacity inputs, now 4 per row on phones;
+    - the Storage text squeezed beside its button;
+    - the Weekly Review step labels on phones, which now show "Step n of 5";
+    - the Progress donut legend, which now says "+N more" past 8 projects;
+    - compact Week-column cards, whose markers and keyboard handle moved into the meta row so titles
+      keep the full width.
 
 ## Feature checklist (SPEC.md, re-read at the end of Phase 3)
 

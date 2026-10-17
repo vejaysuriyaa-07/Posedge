@@ -132,8 +132,18 @@ The format:
 
 ## The Brain and EDGE (AI)
 
-The **Brain** (sidebar, or `G` then `B`) has two parts. The **graph** is a map of your projects, milestones,
-tasks and review cards: drag it, zoom it, hover a node to see what it connects to. It works without AI.
+The **Brain** (sidebar, or `G` then `B`) has two parts.
+
+The **graph** is an Obsidian-style map of your projects, milestones, tasks and review cards. Topic nodes
+(#SVA, #UVM, #python…) link projects that share a term. In the graph you can:
+
+- drag it around, zoom with the wheel or a pinch, and drag nodes;
+- hover a node to see what it connects to, and search to light up matches;
+- tune the forces with the sliders;
+- press ▶ to replay how your brain grew;
+- open it full screen.
+
+It works without AI.
 
 **Ask your brain** lets you ask EDGE, the AI behind it, about your real data ("Brief me on today", "What
 should I study today?"). Answers cite the tasks and projects they're based on, and those light up in the

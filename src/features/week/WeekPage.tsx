@@ -44,7 +44,7 @@ export default function WeekPage() {
   const go = (w: string) => navigate(w === currentWeek ? '/week' : `/week/${w}`);
 
   return (
-    <section className="mx-auto grid max-w-[1500px] gap-5">
+    <section className="mx-auto grid max-w-[1500px] grid-cols-1 gap-5">
       <header className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1">
           <IconButton label="Previous week" onClick={() => go(addWeeksStr(weekStart, -1))}>

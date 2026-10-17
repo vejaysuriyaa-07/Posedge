@@ -81,7 +81,7 @@ export default function ImportPage() {
   }, [plan, keys]);
 
   return (
-    <section className="mx-auto grid max-w-5xl gap-5">
+    <section className="mx-auto grid max-w-5xl grid-cols-1 gap-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl">Import</h1>

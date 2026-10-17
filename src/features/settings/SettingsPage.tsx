@@ -47,7 +47,7 @@ export default function SettingsPage() {
   const s = useSettings();
   const save = (patch: Partial<Omit<Settings, 'id'>>) => void updateSettings(patch);
   return (
-    <div className="mx-auto grid max-w-3xl gap-5">
+    <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5">
       <h1 className="text-2xl">Settings</h1>
 
       <Section title="Appearance">
@@ -71,7 +71,7 @@ export default function SettingsPage() {
         title="Planning"
         description="How many hours you realistically have each day, and which days are for resting."
       >
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
           {WEEKDAY_SHORT.map((d, i) => (
             <label key={d} className="grid gap-1 text-center text-[12px] text-muted">
               {d}
@@ -440,7 +440,7 @@ function StorageSection() {
     <Section title="Storage">
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <HardDrive size={18} className="text-muted" aria-hidden />
-        <span className="flex-1">
+        <span className="min-w-0 grow basis-56">
           {persisted === null
             ? 'Checking storage…'
             : persisted

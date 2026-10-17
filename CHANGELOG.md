@@ -14,13 +14,26 @@ All notable changes to Posedge. Dates are local (America/Los_Angeles).
   - Follow-ups keep the thread. Answers can be copied, listened to or rewritten, and related questions
     are suggested.
   - Voice: push-to-talk questions and optional read-aloud answers.
-- **Graph:** an Obsidian-style map of your projects, milestones, tasks and cards.
-  - Drag, zoom and pinch, and hover a node to light up its neighbors.
-  - The items the latest answer cited stay highlighted.
-  - Filters show or hide cards and recently completed work, and project chips focus a project.
+- **Graph:** an Obsidian-style map of your projects, milestones, tasks, cards and topics.
+  - Topics link projects that share a term, like #SVA, #UVM or #python.
+  - Smooth zoom, pinch and momentum panning. Drag nodes and their neighbors follow.
+  - Hover a node to light it and its neighbors.
+  - Search lights matching nodes. The items the latest answer cited stay highlighted.
+  - Live force and display sliders, and Topics / Cards / Completed filters, all remembered.
+  - **Replay growth** animates your brain growing in the order you created things.
+  - **Full screen** mode, with the answers in a side drawer and an ask bar floating over the graph.
 - **Settings > AI**: enable toggle, your Anthropic API key (show/hide, Test key), model choice with a custom
   model id, this month's token usage, read-aloud, and an opt-in to include the key in backups.
 - Navigation: Brain in the sidebar and More, `G` then `B`, the command palette, and `/` to ask.
+
+### Fixes
+
+- The project page no longer scrolls sideways on phones.
+- Settings: daily capacity inputs are readable on phones, and the storage note no longer squeezes beside
+  its button.
+- Weekly Review shows "Step n of 5" on phones instead of cramped labels.
+- Week columns: task titles use the full card width. Markers and the drag handle sit in the meta row.
+- Progress: the hours donut legend notes the projects past the first eight.
 
 ## [1.0.0] - 2026-10-16
 

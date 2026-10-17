@@ -61,6 +61,8 @@ interface ExchangeProps {
   onRetry: () => void;
   onSpeak: (text: string) => void;
   onCopy: (text: string) => void;
+  /** Tighter type for the full-screen answers drawer. */
+  compact?: boolean;
 }
 
 export function ExchangeView({
@@ -73,6 +75,7 @@ export function ExchangeView({
   onRetry,
   onSpeak,
   onCopy,
+  compact = false,
 }: ExchangeProps) {
   const [copied, setCopied] = useState(false);
   const sources = useMemo(() => citedRefs(x.answer, (r) => r in refs), [x.answer, refs]);
@@ -90,15 +93,19 @@ export function ExchangeView({
   };
 
   return (
-    <article className="border-b border-border pb-9 last:border-b-0">
-      <h2 className="text-[22px] leading-snug font-semibold tracking-tight md:text-[26px]">
+    <article className={`border-b border-border last:border-b-0 ${compact ? 'pb-6' : 'pb-9'}`}>
+      <h2
+        className={`leading-snug font-semibold tracking-tight break-words ${
+          compact ? 'text-[18px]' : 'text-[22px] md:text-[26px]'
+        }`}
+      >
         {x.question}
       </h2>
 
       {sources.length ? (
         <section className="mt-6" aria-label="Sources">
           <SectionLabel icon={<Layers size={15} />}>Sources</SectionLabel>
-          <ol className="mt-2.5 flex gap-2 overflow-x-auto pb-1">
+          <ol className="scrollbar-thin mt-2.5 flex gap-2 overflow-x-auto pb-1">
             {sources.map((ref, i) => {
               const s = refs[ref]!;
               return (
@@ -106,7 +113,9 @@ export function ExchangeView({
                   <button
                     type="button"
                     onClick={() => onOpenRef(s)}
-                    className="flex h-[74px] w-48 flex-col justify-between rounded-xl border border-border bg-surface px-3 py-2 text-left transition hover:bg-elevated"
+                    className={`flex h-[74px] flex-col justify-between rounded-xl border border-border bg-surface px-3 py-2 text-left transition hover:bg-elevated ${
+                      compact ? 'w-44' : 'w-48'
+                    }`}
                   >
                     <span className="line-clamp-2 text-[13px] leading-snug">{s.title}</span>
                     <span className="flex items-center gap-1.5 text-[11.5px] text-muted">
@@ -140,7 +149,7 @@ export function ExchangeView({
         ) : null}
         {html ? (
           <div
-            className="prose-posedge prose-answer mt-2.5"
+            className={`prose-posedge prose-answer mt-2.5 break-words ${compact ? 'prose-compact' : ''}`}
             onClick={onProseClick}
             // Sanitized with DOMPurify in answerHtml.
             dangerouslySetInnerHTML={{ __html: html }}

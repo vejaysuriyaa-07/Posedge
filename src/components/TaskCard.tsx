@@ -56,6 +56,27 @@ export function TaskCard({
 
   const overdueDue = !done && task.dueDate && task.dueDate < today;
 
+  const markers =
+    task.kind === 'learn' || task.isBig3 ? (
+      <>
+        {task.kind === 'learn' ? (
+          <Brain
+            size={compact ? 13 : 15}
+            className="text-sky-500 dark:text-sky-300"
+            aria-label="Learning task"
+            role="img"
+          />
+        ) : null}
+        {task.isBig3 ? (
+          <Star
+            size={compact ? 13 : 15}
+            className="fill-amber-400 text-amber-500 dark:text-amber-300"
+            aria-label="Big 3"
+            role="img"
+          />
+        ) : null}
+      </>
+    ) : null;
   return (
     <div
       data-pc={project?.color}
@@ -66,7 +87,7 @@ export function TaskCard({
       } ${className}`}
       {...rootProps}
     >
-      {handle}
+      {compact ? null : handle}
       <button
         type="button"
         role="checkbox"
@@ -98,6 +119,8 @@ export function TaskCard({
           </span>
         </button>
         <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
+          {/* Narrow day columns: markers sit in the meta row so the title keeps the full width. */}
+          {compact ? markers : null}
           {showProject && project ? (
             compact ? (
               <span
@@ -136,26 +159,10 @@ export function TaskCard({
               due {formatDate(task.dueDate, 'MMM d')}
             </span>
           ) : null}
+          {compact && handle ? <span className="ml-auto">{handle}</span> : null}
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-1 pt-0.5">
-        {task.kind === 'learn' ? (
-          <Brain
-            size={15}
-            className="text-sky-500 dark:text-sky-300"
-            aria-label="Learning task"
-            role="img"
-          />
-        ) : null}
-        {task.isBig3 ? (
-          <Star
-            size={15}
-            className="fill-amber-400 text-amber-500 dark:text-amber-300"
-            aria-label="Big 3"
-            role="img"
-          />
-        ) : null}
-      </div>
+      {compact ? null : <div className="flex shrink-0 items-center gap-1 pt-0.5">{markers}</div>}
     </div>
   );
 }

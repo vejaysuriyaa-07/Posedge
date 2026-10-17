@@ -73,7 +73,7 @@ export default function ReviewPage() {
   const needs = stats?.needs ?? [];
 
   return (
-    <section className="mx-auto grid max-w-4xl gap-5">
+    <section className="mx-auto grid max-w-4xl grid-cols-1 gap-5">
       <header className="grid gap-4">
         <h1 className="text-2xl">Review</h1>
         <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">

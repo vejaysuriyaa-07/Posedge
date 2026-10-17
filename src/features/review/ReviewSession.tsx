@@ -125,7 +125,7 @@ export function ReviewSession({
     const correct = results.filter((r) => r.rating > 1).length;
     const minutes = Math.max(1, Math.round(results.reduce((s, r) => s + r.durationMs, 0) / 60000));
     return (
-      <div className="mx-auto grid max-w-lg gap-5 rounded-2xl border border-border bg-surface p-6 text-center shadow-card">
+      <div className="mx-auto grid max-w-lg grid-cols-1 gap-5 rounded-2xl border border-border bg-surface p-6 text-center shadow-card">
         <h2 className="text-xl">Session done</h2>
         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Stat label="Reviewed" value={String(reviewed)} />
@@ -159,7 +159,7 @@ export function ReviewSession({
   const project = byId.get(card.projectId);
 
   return (
-    <div className="mx-auto grid max-w-2xl gap-4">
+    <div className="mx-auto grid max-w-2xl grid-cols-1 gap-4">
       <div className="flex items-center gap-3">
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-border">
           <div

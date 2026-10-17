@@ -3,9 +3,11 @@ import type { Milestone, Project, ReviewCard, Task } from '../db/types';
 import {
   buildKnowledgeGraph,
   MAX_GRAPH_TASKS,
+  MAX_TOPICS,
   neighborIds,
   speakable,
   takeSentences,
+  topicTerms,
 } from './brain';
 
 const TODAY = '2026-10-17';
@@ -73,7 +75,7 @@ function card(p: Partial<CardIn>): CardIn {
   };
 }
 
-const ALL = { includeCards: true, includeDone: true };
+const ALL = { includeCards: true, includeDone: true, includeTopics: false };
 
 describe('knowledge graph', () => {
   it('links tasks to their milestone or project, milestones to projects and cards to their task', () => {
@@ -109,7 +111,7 @@ describe('knowledge graph', () => {
         { source: c2.id, target: 'a' },
       ]),
     );
-    expect(g.counts).toEqual({ projects: 1, milestones: 1, tasks: 2, cards: 2 });
+    expect(g.counts).toEqual({ projects: 1, milestones: 1, tasks: 2, cards: 2, topics: 0 });
     expect(g.nodes[0]).toMatchObject({ label: 'Project a', emoji: '🎯', color: 'violet' });
     expect(neighborIds(g.links, t1.id)).toEqual(new Set([m.id, c1.id]));
   });
@@ -129,7 +131,11 @@ describe('knowledge graph', () => {
       milestones: [milestone({ title: 'finished', done: true })],
       cards: [card({}), card({ suspended: true })],
     };
-    const lean = buildKnowledgeGraph(input, { includeCards: false, includeDone: false });
+    const lean = buildKnowledgeGraph(input, {
+      includeCards: false,
+      includeDone: false,
+      includeTopics: false,
+    });
     expect(lean.nodes.filter((nd) => nd.kind !== 'project').map((nd) => nd.label)).toEqual([
       'open',
     ]);
@@ -162,6 +168,81 @@ describe('knowledge graph', () => {
     expect(g.nodes.some((nd) => nd.label === 'urgent')).toBe(true);
     const [a, b] = g.nodes;
     expect(a!.radius).toBeGreaterThan(b!.radius);
+  });
+});
+
+describe('topics', () => {
+  it('picks acronyms and meaningful words, and drops filler and generic task verbs', () => {
+    expect([
+      ...topicTerms('Write an SVA property: after req rises, gnt must be high').entries(),
+    ]).toEqual([
+      ['sva', 'SVA'],
+      ['property', 'property'],
+    ]);
+    expect([...topicTerms('C++ / Python and LLMs, reviewing classes').entries()]).toEqual([
+      ['c++', 'C++'],
+      ['python', 'python'],
+      ['llm', 'LLM'],
+      ['reviewing', 'reviewing'],
+      ['class', 'class'],
+    ]);
+    expect([...topicTerms('Read the paper and finish the notes').keys()]).toEqual([]);
+  });
+
+  it('bridges projects that share a term, and skips terms used inside one project only', () => {
+    const projects = [
+      project('a', 1, { name: 'Camera ISP' }),
+      project('b', 2, { name: 'C++ / Python' }),
+    ];
+    const tasks = [
+      task({
+        projectId: 'a',
+        title: 'Bilinear demosaic in Python',
+        createdAt: '2026-10-03T00:00:00.000Z',
+      }),
+      task({
+        projectId: 'b',
+        title: 'Python numpy vectorization',
+        createdAt: '2026-10-02T00:00:00.000Z',
+      }),
+      task({ projectId: 'a', title: 'Demosaic edge cases' }),
+    ];
+    const g = buildKnowledgeGraph(
+      { today: TODAY, projects, tasks, milestones: [], cards: [] },
+      { includeCards: false, includeDone: false, includeTopics: true },
+    );
+    const topics = g.nodes.filter((nd) => nd.kind === 'topic');
+    // "python" spans both projects (incl. the project name); "demosaic" stays inside Camera ISP.
+    expect(topics.map((nd) => nd.label)).toEqual(['python']);
+    expect(topics[0]).toMatchObject({
+      id: 'topic:python',
+      projectId: '',
+      born: '2026-10-01T00:00:00.000Z',
+    });
+    expect(
+      g.links
+        .filter((l) => l.target === 'topic:python')
+        .map((l) => l.source)
+        .sort(),
+    ).toEqual(['b', tasks[0]!.id, tasks[1]!.id].sort());
+    expect(g.counts.topics).toBe(1);
+  });
+
+  it('caps topics at the most-shared terms', () => {
+    const projects = [project('a', 1), project('b', 2)];
+    const words = Array.from(
+      { length: MAX_TOPICS + 10 },
+      (_, i) => `term${String.fromCharCode(97 + (i % 26))}${i}`,
+    );
+    const tasks = words.flatMap((w) => [
+      task({ projectId: 'a', title: w }),
+      task({ projectId: 'b', title: w }),
+    ]);
+    const g = buildKnowledgeGraph(
+      { today: TODAY, projects, tasks, milestones: [], cards: [] },
+      { includeCards: false, includeDone: false, includeTopics: true },
+    );
+    expect(g.counts.topics).toBe(MAX_TOPICS);
   });
 });
 

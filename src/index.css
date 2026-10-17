@@ -192,6 +192,15 @@
   font-size: 15.5px;
   line-height: 1.75;
 }
+.pe-range {
+  accent-color: var(--pe-brand);
+  height: 18px;
+  cursor: pointer;
+}
+.prose-answer.prose-compact {
+  font-size: 14.5px;
+  line-height: 1.7;
+}
 .prose-answer > * + * {
   margin-top: 0.85em;
 }

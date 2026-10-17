@@ -1,28 +1,56 @@
 import { Maximize, Minus, Plus } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type CSSProperties,
+  type Ref,
+} from 'react';
 import type { KnowledgeGraph as Graph } from '../../domain/brain';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
-import { GraphEngine, type GraphTooltip } from './graphEngine';
+import {
+  GraphEngine,
+  type GraphSettings,
+  type GraphTooltip,
+  type ReplayState,
+} from './graphEngine';
+
+export interface KnowledgeGraphHandle {
+  toggleReplay: () => void;
+  /** Fit the whole graph again (and keep fitting as the panel resizes). */
+  refit: () => void;
+}
 
 export interface KnowledgeGraphProps {
   graph: Graph;
   today: string;
   isDark: boolean;
-  /** Items the latest answer cited; they stay lit while the rest dims. */
+  /** Items to keep lit while the rest dims (search matches or the latest answer's sources). */
   highlightIds: ReadonlySet<string>;
   selectedId?: string;
   /** Change `seq` to pan and zoom to a node. */
   focus?: { id: string; seq: number };
+  settings: GraphSettings;
   label: string;
   onSelectProject: (id: string | undefined) => void;
   onOpenTask: (id: string) => void;
+  onReplay: (s: ReplayState) => void;
+  /** Where the zoom controls sit (defaults to the bottom-right corner). */
+  controlsStyle?: CSSProperties;
+  /** Space covered by floating UI that fitting should avoid. */
+  insets?: { right: number; bottom: number };
+  ref?: Ref<KnowledgeGraphHandle>;
 }
 
-const ZOOM_BTN = 'grid size-8 place-items-center text-muted hover:bg-elevated hover:text-fg';
+const ZOOM_BTN =
+  'grid size-8 place-items-center text-muted transition hover:bg-elevated hover:text-fg';
 
 /**
- * An Obsidian-style graph view: drag to pan, scroll or pinch to zoom, drag nodes around.
- * Hovering a node lights it and its neighbors and fades the rest.
+ * An Obsidian-style graph view: drag to pan (with momentum), scroll or pinch to zoom, drag nodes.
+ * Hovering a node lights it and its neighbors and fades the rest. Keyboard: arrows pan, + and -
+ * zoom, 0 fits.
  */
 export function KnowledgeGraph(props: KnowledgeGraphProps) {
   const {
@@ -32,15 +60,21 @@ export function KnowledgeGraph(props: KnowledgeGraphProps) {
     highlightIds,
     selectedId,
     focus,
+    settings,
     label,
     onSelectProject,
     onOpenTask,
+    onReplay,
+    controlsStyle,
+    insets,
+    ref,
   } = props;
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engine = useRef<GraphEngine | null>(null);
   const reduced = useReducedMotion();
   const [tooltip, setTooltip] = useState<GraphTooltip | null>(null);
+  const hintId = useId();
 
   useEffect(() => {
     if (!wrapRef.current || !canvasRef.current) return;
@@ -48,6 +82,7 @@ export function KnowledgeGraph(props: KnowledgeGraphProps) {
       onTooltip: setTooltip,
       onSelectProject: () => {},
       onOpenTask: () => {},
+      onReplay: () => {},
     });
     engine.current = e;
     return () => {
@@ -57,13 +92,24 @@ export function KnowledgeGraph(props: KnowledgeGraphProps) {
   }, []);
 
   useEffect(() => {
-    if (engine.current)
-      engine.current.callbacks = { onTooltip: setTooltip, onSelectProject, onOpenTask };
-  }, [onSelectProject, onOpenTask]);
+    if (engine.current) {
+      engine.current.callbacks = { onTooltip: setTooltip, onSelectProject, onOpenTask, onReplay };
+    }
+  }, [onSelectProject, onOpenTask, onReplay]);
 
   useEffect(() => {
     engine.current?.setOptions({ highlightIds, selectedId, isDark, today, reduced });
   }, [highlightIds, selectedId, isDark, today, reduced]);
+
+  useEffect(() => {
+    engine.current?.setSettings(settings);
+  }, [settings]);
+
+  const insetRight = insets?.right ?? 0;
+  const insetBottom = insets?.bottom ?? 0;
+  useEffect(() => {
+    engine.current?.setInsets({ right: insetRight, bottom: insetBottom });
+  }, [insetRight, insetBottom]);
 
   useEffect(() => {
     engine.current?.setGraph(graph);
@@ -73,29 +119,49 @@ export function KnowledgeGraph(props: KnowledgeGraphProps) {
     if (focus) engine.current?.focus(focus.id);
   }, [focus]);
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      toggleReplay: () => engine.current?.toggleReplay(),
+      refit: () => engine.current?.refit(),
+    }),
+    [],
+  );
+
   return (
     <div ref={wrapRef} className="absolute inset-0 overflow-hidden">
       <canvas
         ref={canvasRef}
         role="img"
         aria-label={label}
-        className="block touch-none select-none"
+        aria-describedby={hintId}
+        tabIndex={0}
+        className="block touch-none select-none [outline-offset:-2px]"
       />
+      <p id={hintId} className="sr-only">
+        Arrow keys pan, plus and minus zoom, 0 fits the graph.
+      </p>
       {tooltip ? (
         <div
           className="pointer-events-none absolute z-10 max-w-[250px] rounded-lg border border-border bg-elevated px-3 py-2 shadow-card"
           style={{ left: tooltip.x, top: tooltip.y }}
           aria-hidden
         >
-          <p className="text-[13px] leading-snug font-medium">{tooltip.title}</p>
+          <p className="text-[13px] leading-snug font-medium break-words">{tooltip.title}</p>
           <p className="mt-0.5 text-[12px] text-muted">{tooltip.meta}</p>
         </div>
       ) : null}
-      <div className="absolute right-3 bottom-3 flex overflow-hidden rounded-lg border border-border bg-surface shadow-card">
+      <div
+        className={`absolute z-10 flex overflow-hidden rounded-lg border border-border bg-surface shadow-card ${
+          controlsStyle ? '' : 'right-3 bottom-3'
+        }`}
+        style={controlsStyle}
+      >
         <button
           type="button"
           className={ZOOM_BTN}
           aria-label="Zoom out"
+          title="Zoom out (−)"
           onClick={() => engine.current?.zoomBy(1 / 1.3)}
         >
           <Minus size={15} />
@@ -104,6 +170,7 @@ export function KnowledgeGraph(props: KnowledgeGraphProps) {
           type="button"
           className={`${ZOOM_BTN} border-x border-border`}
           aria-label="Zoom in"
+          title="Zoom in (+)"
           onClick={() => engine.current?.zoomBy(1.3)}
         >
           <Plus size={15} />
@@ -112,6 +179,7 @@ export function KnowledgeGraph(props: KnowledgeGraphProps) {
           type="button"
           className={ZOOM_BTN}
           aria-label="Fit graph to view"
+          title="Fit (0)"
           onClick={() => engine.current?.refit()}
         >
           <Maximize size={14} />

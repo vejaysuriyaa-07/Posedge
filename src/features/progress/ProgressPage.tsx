@@ -239,7 +239,7 @@ export default function ProgressPage() {
   const info = levelInfo(settings.xpTotal);
 
   return (
-    <section className="mx-auto grid max-w-6xl gap-5">
+    <section className="mx-auto grid max-w-6xl grid-cols-1 gap-5">
       <h1 className="text-2xl">Progress</h1>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
@@ -384,6 +384,9 @@ export default function ProgressPage() {
                     </li>
                   );
                 })}
+                {donut.length > 8 ? (
+                  <li className="text-[12px] text-muted">+{donut.length - 8} more</li>
+                ) : null}
               </ul>
             </div>
           ) : (

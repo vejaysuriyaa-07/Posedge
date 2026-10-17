@@ -58,7 +58,7 @@ export default function WeeklyReviewPage() {
   if (!existing && started !== target) setStarted(target);
   if (existing && !redo && started !== target) {
     return (
-      <section className="mx-auto grid max-w-2xl gap-4">
+      <section className="mx-auto grid max-w-2xl grid-cols-1 gap-4">
         <h1 className="text-2xl">Weekly Review</h1>
         <div className="grid gap-3 rounded-xl border border-border bg-surface p-5 shadow-card">
           <p className="flex items-center gap-2 font-medium">
@@ -102,23 +102,34 @@ export default function WeeklyReviewPage() {
 
 function Stepper({ step, onJump }: { step: number; onJump: (i: number) => void }) {
   return (
-    <ol className="grid grid-cols-5 gap-2" aria-label="Steps">
-      {STEPS.map((label, i) => (
-        <li key={label}>
-          <button
-            type="button"
-            onClick={() => onJump(i)}
-            aria-current={i === step ? 'step' : undefined}
-            className="grid w-full gap-1.5 text-left"
-          >
-            <span className={`h-1 rounded-full ${i <= step ? 'bg-brand' : 'bg-border'}`} />
-            <span className={`text-[12px] ${i === step ? 'font-semibold text-fg' : 'text-muted'}`}>
-              <span className="tabular">{i + 1}.</span> {label}
-            </span>
-          </button>
-        </li>
-      ))}
-    </ol>
+    <div>
+      <ol className="grid grid-cols-5 gap-2" aria-label="Steps">
+        {STEPS.map((label, i) => (
+          <li key={label}>
+            <button
+              type="button"
+              onClick={() => onJump(i)}
+              aria-current={i === step ? 'step' : undefined}
+              aria-label={`Step ${i + 1}: ${label}`}
+              className="grid min-h-6 w-full gap-1.5 text-left"
+            >
+              <span className={`h-1 rounded-full ${i <= step ? 'bg-brand' : 'bg-border'}`} />
+              {/* Labels fit from small tablets up; phones show the current step below. */}
+              <span
+                className={`hidden text-[12px] whitespace-nowrap sm:inline ${i === step ? 'font-semibold text-fg' : 'text-muted'}`}
+                aria-hidden
+              >
+                <span className="tabular">{i + 1}.</span> {label}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ol>
+      <p className="mt-2 text-[12px] text-muted sm:hidden" aria-hidden>
+        Step {step + 1} of {STEPS.length} ·{' '}
+        <span className="font-semibold text-fg">{STEPS[step]}</span>
+      </p>
+    </div>
   );
 }
 
@@ -199,7 +210,7 @@ function Wizard({
 
   if (saved) {
     return (
-      <section className="mx-auto grid max-w-2xl gap-4 text-center">
+      <section className="mx-auto grid max-w-2xl grid-cols-1 gap-4 text-center">
         <PartyPopper size={36} className="mx-auto text-brand" aria-hidden />
         <h1 className="text-2xl">
           You&apos;re set for {weekLabel(target, mondayOf(today)).toLowerCase()}

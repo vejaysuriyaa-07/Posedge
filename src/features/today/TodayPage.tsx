@@ -70,7 +70,7 @@ export default function TodayPage() {
   const now = new Date();
 
   return (
-    <section className="mx-auto grid max-w-5xl gap-6">
+    <section className="mx-auto grid max-w-5xl grid-cols-1 gap-6">
       <header className="flex flex-wrap items-center gap-5">
         <ProgressRing
           value={plannedTotal ? plannedDone / plannedTotal : 0}

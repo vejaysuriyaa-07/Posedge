@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
@@ -72,7 +72,7 @@ describe('Brain', () => {
       await within(graph).findByRole('button', { name: /DV Interview Prep/ }),
     ).toBeInTheDocument();
     expect(
-      within(graph).getByRole('img', { name: /1 projects, 0 milestones, 1 tasks/ }),
+      within(graph).getByRole('img', { name: /Graph of 1 project · 1 task · 0 cards · 0 topics/ }),
     ).toBeInTheDocument();
     expect(screen.getByText('Connect an Anthropic API key to ask questions')).toBeInTheDocument();
     expect(screen.getByLabelText('Ask your brain')).toBeDisabled();
@@ -95,7 +95,7 @@ describe('Brain', () => {
       'href',
       `/projects/${project.id}`,
     );
-    await user.click(screen.getByRole('button', { name: 'Close' }));
+    await user.click(screen.getByRole('button', { name: 'Close project details' }));
     expect(screen.queryByRole('link', { name: 'Open project' })).not.toBeInTheDocument();
   });
 
@@ -181,6 +181,75 @@ describe('Brain', () => {
     expect(vi.mocked(streamChat).mock.calls[1]![0].messages).toEqual([
       { role: 'user', content: "What's due this week?" },
     ]);
+  });
+
+  it('opens the graph full screen and closes it with Escape, returning focus', async () => {
+    const user = userEvent.setup();
+    await seed();
+    render(
+      <Providers>
+        <BrainPage />
+      </Providers>,
+    );
+    const expand = screen.getByRole('button', { name: 'Full screen graph' });
+    await user.click(expand);
+    expect(screen.getByRole('complementary', { name: 'Graph, full screen' })).toBeInTheDocument();
+    expect(document.body.style.overflow).toBe('hidden');
+    // The page behind is inert while the graph covers it.
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Ask your brain' }).closest('[inert]'),
+    ).not.toBeNull();
+    await user.keyboard('{Escape}');
+    expect(
+      screen.queryByRole('complementary', { name: 'Graph, full screen' }),
+    ).not.toBeInTheDocument();
+    expect(document.body.style.overflow).toBe('');
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Full screen graph' })).toHaveFocus(),
+    );
+  });
+
+  it('searches the graph and reports matches', async () => {
+    const user = userEvent.setup();
+    await seed();
+    render(
+      <Providers>
+        <BrainPage />
+      </Providers>,
+    );
+    const graph = screen.getByRole('region', { name: 'Graph' });
+    await within(graph).findByRole('button', { name: /DV Interview Prep/ });
+    await user.type(within(graph).getByLabelText('Search the graph'), 'sva');
+    expect(within(graph).getByText('1 match')).toBeInTheDocument();
+    await user.type(within(graph).getByLabelText('Search the graph'), 'zzz');
+    expect(within(graph).getByText('No matches')).toBeInTheDocument();
+    await user.click(within(graph).getByRole('button', { name: 'Clear search' }));
+    expect(within(graph).getByText(/1 project · 1 task/)).toBeInTheDocument();
+  });
+
+  it('changes graph settings live, remembers them, and resets to defaults', async () => {
+    const user = userEvent.setup();
+    localStorage.removeItem('posedge.graph.v1');
+    render(
+      <Providers>
+        <BrainPage />
+      </Providers>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Graph settings' }));
+    const dialog = screen.getByRole('dialog', { name: 'Graph settings' });
+    const repel = within(dialog).getByLabelText('Repel force');
+    fireEvent.change(repel, { target: { value: '2' } });
+    expect(within(dialog).getByText('200%')).toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem('posedge.graph.v1')!).settings.repelForce).toBe(2);
+    await user.click(within(dialog).getByRole('button', { name: /Reset to defaults/ }));
+    expect(JSON.parse(localStorage.getItem('posedge.graph.v1')!).settings.repelForce).toBe(1);
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: 'Graph settings' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Topics' }));
+    expect(screen.getByRole('button', { name: 'Topics' })).toHaveAttribute('aria-pressed', 'false');
+    expect(JSON.parse(localStorage.getItem('posedge.graph.v1')!).options.includeTopics).toBe(false);
+    localStorage.removeItem('posedge.graph.v1');
   });
 
   it('labels models in plain words', () => {
