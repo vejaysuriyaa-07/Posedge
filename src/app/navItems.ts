@@ -1,5 +1,6 @@
 import {
   Brain,
+  BrainCircuit,
   CalendarDays,
   ChartColumn,
   ClipboardCheck,
@@ -24,6 +25,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { to: '/projects', label: 'Projects', icon: FolderKanban, chord: 'p' },
   { to: '/review', label: 'Review', icon: Brain, chord: 'r' },
   { to: '/progress', label: 'Progress', icon: ChartColumn },
+  { to: '/brain', label: 'Brain', icon: BrainCircuit, chord: 'b' },
 ];
 
 export const SECONDARY_NAV: NavItem[] = [

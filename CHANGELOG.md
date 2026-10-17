@@ -2,6 +2,28 @@
 
 All notable changes to Posedge. Dates are local (America/Los_Angeles).
 
+## [Unreleased]
+
+### The Brain and EDGE (early Phase 4)
+
+- New **Brain** screen: an always-dark HUD around an animated neural core.
+  - You sit at the center as an arc reactor.
+  - Your projects orbit it, with this week's tasks and upcoming milestones as satellites.
+  - Your review cards show as stars.
+  - Pulses run along the links in proportion to what you finished this week.
+- Side panels show telemetry (streak, today, reviews, focus, level, week load), the project list, upcoming
+  deadlines with countdowns, this week's Big 3 and the AI status.
+- **EDGE**, an AI assistant that answers questions about your real Posedge data:
+  - Replies stream in like a typewriter, in a multi-turn conversation.
+  - Suggestion chips: "Brief me", "What's due this week?", "What should I study today?",
+    "How's my DV prep going?".
+  - Push-to-talk voice input, and optional spoken replies.
+  - The core spins up while EDGE thinks and shows a voice ring while it answers.
+- **Settings > AI**: enable toggle, your Anthropic API key (show/hide, Test key), model choice with a custom
+  model id, this month's token usage, spoken replies, and an opt-in to include the key in backups.
+- Navigation: Brain in the sidebar and More, `G` then `B`, the command palette, and `/` to talk to EDGE.
+- Full screen mode, a phone layout, and a static frame when reduced motion is on.
+
 ## [1.0.0] - 2026-10-16
 
 ### Phase 3: Polish

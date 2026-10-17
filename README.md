@@ -130,6 +130,23 @@ The format:
   "Camera ISP + Tiny Tapeout" instead of creating a duplicate.
 - JSON works too: `{ "version": 1, "projects": [{ "name": "...", "tasks": [{ "title": "...", "week": "2026-10-19" }] }] }`.
 
+## The Brain and EDGE (AI)
+
+The **Brain** (sidebar, or `G` then `B`) is a live map of your work. You are the core, your projects orbit
+you, and this week's tasks, milestones and review cards circle around them. It works without AI.
+
+**EDGE** is the AI inside it. It answers questions about your real Posedge data ("Brief me", "What should I
+study today?"), can talk back, and takes voice input. To turn it on:
+
+1. Create an API key in the [Anthropic Console](https://console.anthropic.com/) and set a monthly spend limit.
+2. Open **Settings > AI**, paste the key, press **Test key**, then switch on **Enable AI features**.
+
+Your key stays in this browser (IndexedDB) and is sent only to `api.anthropic.com`. It is left out of backups
+unless you tick "Include API key in backup". API usage is billed by Anthropic, separately from a claude.ai
+subscription; Settings shows this month's token count. Nothing is sent until you ask EDGE something. Each
+conversation sends a compact snapshot: projects, milestones, current tasks, recent card prompts and your
+stats. EDGE can't change your data yet; it tells you the quickest way to do it.
+
 ## Quick Add tokens
 
 `~90m` `~2h` `~1.5h` estimate · `!1` `!2` `!3` priority · `#learn` learning task · `#big3` Big 3 ·
@@ -142,6 +159,8 @@ The format:
 | `N`                  | Quick add                                         |
 | `Ctrl/⌘ K`           | Command palette                                   |
 | `G` then `T/W/P/R/S` | Go to Today / Week / Projects / Review / Settings |
+| `G` then `B`         | Go to the Brain                                   |
+| `/`                  | Talk to EDGE (Brain)                              |
 | `E` / `X`            | Edit / toggle the focused task                    |
 | `Space`              | Reveal the answer (Review)                        |
 | `1` `2` `3` `4`      | Again / Hard / Good / Easy                        |

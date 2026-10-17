@@ -10,6 +10,8 @@ export const SHORTCUTS: { keys: string[]; label: string }[] = [
   { keys: ['G', 'W'], label: 'Go to Week' },
   { keys: ['G', 'P'], label: 'Go to Projects' },
   { keys: ['G', 'R'], label: 'Go to Review' },
+  { keys: ['G', 'B'], label: 'Go to Brain' },
+  { keys: ['/'], label: 'Talk to EDGE (Brain)' },
   { keys: ['G', 'S'], label: 'Go to Settings' },
   { keys: ['E'], label: 'Edit the focused task' },
   { keys: ['X'], label: 'Toggle the focused task complete' },

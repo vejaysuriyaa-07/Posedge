@@ -1,8 +1,12 @@
 import { Link } from 'react-router';
-import { ChartColumn } from 'lucide-react';
+import { BrainCircuit, ChartColumn } from 'lucide-react';
 import { SECONDARY_NAV } from './navItems';
 
-const ITEMS = [{ to: '/progress', label: 'Progress', icon: ChartColumn }, ...SECONDARY_NAV];
+const ITEMS = [
+  { to: '/brain', label: 'Brain', icon: BrainCircuit },
+  { to: '/progress', label: 'Progress', icon: ChartColumn },
+  ...SECONDARY_NAV,
+];
 
 export default function MorePage() {
   return (

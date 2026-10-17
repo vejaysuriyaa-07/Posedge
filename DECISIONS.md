@@ -123,6 +123,53 @@ Ambiguities resolved while building Posedge, and any deviations from [`SPEC.md`]
     already existed (`vejaysuriyaa-07/Posedge`), so work was pushed to the branch
     `claude/determined-galileo-u5s8qb`; the deploy workflow runs once it is merged into `main`.
 
+## Brain and EDGE (early Phase 4)
+
+40. **Brain before the full Phase 4.** VJ asked for an Iron Man style "brain with actual AI inside". This builds
+    the Phase 4 foundation (API client, Settings > AI, the context snapshot) plus a read-only conversational
+    assistant, EDGE, inside a new Brain screen. `propose_actions`, preview/apply/undo batches, "Draft with AI"
+    and "Check my answer" are still unbuilt. Until then EDGE can't change data; it suggests Quick Add tokens.
+41. **Key and privacy.** Calls go browser-direct to `api.anthropic.com` with VJ's own key
+    (`dangerouslyAllowBrowser`). The key lives in the settings record in IndexedDB and is left out of backups
+    unless "Include API key in backup" is on. Nothing is sent without a user action (Send, a suggestion chip,
+    the mic, Test key, "Ask EDGE"); the Brain's greeting is computed locally. Without a key, or with AI off,
+    every AI control is hidden and the Brain still works as a dashboard.
+42. **Model and request options.** The default is `claude-sonnet-5-5`, with `claude-haiku-5-5` as the cheaper
+    option and a free-text override for future models. Conversational replies use `effort: low` for speed;
+    models that support it get server-side fallback. SDK retries are off and the timeout is 60s, so the
+    console shows calm, specific errors (401, 429, 529, offline, timeout) with a retry button.
+43. **Prompt caching.** The persona and the data snapshot are two system blocks with `cache_control` on the
+    snapshot. The snapshot is taken once per conversation, so follow-ups reuse the cache. "New conversation"
+    takes a fresh one. History is capped at the last 20 messages.
+44. **Snapshot contents** (`src/ai/context.ts`): today, timezone, capacity, rest days, active projects with
+    column names, milestones, tasks (unplanned open ones, plus last week through four weeks out that are open
+    or completed in the last 7 days), the 50 latest card prompts and stats (streak, freezes, level, reviews
+    due, tasks done today). It is capped near 15k tokens, trimming the oldest completed tasks first, then card
+    prompts, then the furthest-out open tasks.
+45. **Persona.** EDGE (pos*edge*) gives spoken-friendly plain sentences, usually under 120 words, grounded only
+    in the snapshot. The tone is calm and never guilt-tripping. The persona text is stable so it caches.
+46. **Voice.** Uses the Web Speech API. The mic is push-to-talk: the transcript sends when VJ stops talking.
+    Spoken replies are off by default and toggled in the console or in Settings. They are spoken sentence by
+    sentence as the stream arrives, preferring an en-GB voice. Both controls are hidden where unsupported.
+47. **Neural core rendering.** Plain Canvas 2D, with no WebGL or three.js dependency:
+    - The graph and layout math are pure functions in `src/domain/brain.ts`, unit-tested.
+    - Projects sit on an orbit that becomes an ellipse on wide or tall canvases. This week's tasks and the
+      next two milestones fan out as satellites away from the core.
+    - Each review card is a twinkling star (capped at 360; due cards glow amber) over static decorative
+      dust.
+    - Pulses flow outward in proportion to completions in the last 7 days, and inward while EDGE thinks or
+      speaks. The core spins up and shows a voice ring.
+    - Completing a task sends a shockwave from its project.
+    - Labels avoid each other. Small canvases label only the selected or hovered node.
+    - Reduced motion draws one static frame.
+48. **Look.** The HUD is always dark whatever the app theme. Headings use Orbitron (OFL, self-hosted via
+    fontsource, loaded only with the Brain's lazy chunk). Project color is always paired with the emoji.
+49. **Countdowns.** The HUD shows "Today", "T-3d", "T-2w", and "Carried over" instead of "overdue". A
+    milestone's deadline is the Sunday that ends its week.
+50. **Access.** `G` then `B` opens the Brain, and `/` focuses EDGE. The canvas has a text summary, and the
+    Nodes list (buttons) is the keyboard route to the same project details.
+51. **Not deployed yet.** The Brain lives on the session branch. GitHub Pages is updated only after VJ's OK.
+
 ## Feature checklist (SPEC.md, re-read at the end of Phase 3)
 
 Legend: [x] done, [~] done with a noted deviation, [ ] deferred.
@@ -178,7 +225,7 @@ Legend: [x] done, [~] done with a noted deviation, [ ] deferred.
 - [x] autoUpdate SW, manifest (name, colors, standalone, 192/512/maskable icons with relative src), scope and start_url `/posedge/`, precache incl. fonts, update toast, iOS meta tags
 - [x] First-run `navigator.storage.persist()` stored in settings; backup format `{ app, schemaVersion, exportedAt, data }` validated with zod; round-trip test
 - [~] Deploy workflow exactly as specified plus `BASE_PATH` (decision 3); all action versions exist (decision 4)
-- [x] README sections listed in section 12 (the AI section comes with Phase 4)
+- [x] README sections listed in section 12, including "The Brain and EDGE (AI)"
 - [~] Repo/push: pushed to the session branch; merge to `main` to deploy (decision 39)
 
 **Tests (section 13)**
@@ -190,5 +237,6 @@ Legend: [x] done, [~] done with a noted deviation, [ ] deferred.
 
 **Deferred**
 
-- [ ] Phase 4 (Ask Posedge AI layer): waits until VJ asks, per section 0.
+- [~] Phase 4 (Ask Posedge AI layer): foundation built with the Brain and EDGE (decisions 40-51);
+  proposals, apply/undo, "Draft with AI" and "Check my answer" are still to come.
 - [ ] Editing a project's board columns after creation (not in the spec; columns come from the template).

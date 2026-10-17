@@ -241,6 +241,25 @@ export const SettingsSchema = z.object({
   /** Result of navigator.storage.persist() on first run. */
   storagePersisted: z.boolean().optional(),
   focusDefaultMin: z.union([z.literal(25), z.literal(50)]),
+  /** AI (EDGE / Ask Posedge). The key never leaves this browser except to api.anthropic.com. */
+  aiEnabled: z.boolean(),
+  aiApiKey: z.string().optional(),
+  aiModel: z.string(),
+  /** Free-text model id for future models; wins over aiModel when set. */
+  aiModelOverride: z.string().optional(),
+  /** Include the API key in backup exports (off by default). */
+  aiKeyInBackup: z.boolean(),
+  /** Speak EDGE's replies aloud in the Brain. */
+  aiVoiceReplies: z.boolean(),
+  /** Token usage for the current month (resets when the month changes). */
+  aiUsage: z
+    .object({
+      month: z.string(),
+      inputTokens: z.number(),
+      outputTokens: z.number(),
+      requests: z.number(),
+    })
+    .optional(),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 
@@ -266,4 +285,8 @@ export const DEFAULT_SETTINGS: Settings = {
   big3BonusWeeks: [],
   onboarded: false,
   focusDefaultMin: 25,
+  aiEnabled: false,
+  aiModel: 'claude-sonnet-5-5',
+  aiKeyInBackup: false,
+  aiVoiceReplies: false,
 };

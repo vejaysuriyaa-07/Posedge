@@ -13,6 +13,7 @@ import type { Settings, Theme } from '../../db/types';
 import { WEEKDAY_SHORT } from '../../domain/week';
 import { useSettings } from '../../hooks/useSettings';
 import { exportAndDownload } from './download';
+import { AiSettings } from './AiSettings';
 
 export const REPO_URL = 'https://github.com/vejaysuriyaa-07/Posedge';
 
@@ -196,6 +197,8 @@ export default function SettingsPage() {
           </Select>
         </label>
       </Section>
+
+      <AiSettings s={s} />
 
       <DataSection lastBackupAt={s.lastBackupAt} />
       <StorageSection />

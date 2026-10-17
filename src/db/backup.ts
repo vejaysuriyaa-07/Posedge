@@ -37,7 +37,10 @@ export const BackupSchema = z.object({
 });
 export type Backup = z.infer<typeof BackupSchema>;
 
-export async function exportBackup(now: Date = new Date()): Promise<Backup> {
+export async function exportBackup(
+  now: Date = new Date(),
+  opts: { includeApiKey?: boolean } = {},
+): Promise<Backup> {
   return db.transaction(
     'r',
     TABLE_NAMES.map((n) => db.table(n)),
@@ -45,6 +48,10 @@ export async function exportBackup(now: Date = new Date()): Promise<Backup> {
       const data = Object.fromEntries(
         await Promise.all(TABLE_NAMES.map(async (n) => [n, await db.table(n).toArray()] as const)),
       ) as Backup['data'];
+      // The Anthropic API key stays out of backups unless explicitly included.
+      if (!opts.includeApiKey) {
+        data.settings = data.settings.map(({ aiApiKey: _key, ...rest }) => rest);
+      }
       return { app: 'posedge', schemaVersion: SCHEMA_VERSION, exportedAt: now.toISOString(), data };
     },
   );
@@ -59,7 +66,8 @@ export function backupFileName(now: Date = new Date()): string {
 
 /** Serializes a backup and records `lastBackupAt`. */
 export async function exportBackupJson(now: Date = new Date()): Promise<string> {
-  const backup = await exportBackup(now);
+  const s = await getSettings();
+  const backup = await exportBackup(now, { includeApiKey: s.aiKeyInBackup });
   await updateSettings({ lastBackupAt: now.toISOString() });
   return JSON.stringify(backup, null, 2);
 }

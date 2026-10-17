@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import {
   ArrowRight,
   Brain,
+  BrainCircuit,
   CalendarDays,
   ChartColumn,
   ClipboardCheck,
@@ -182,6 +183,15 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
         hint: 'G R',
         icon: Brain,
         run: go('/review'),
+      },
+      {
+        id: 'g-brain',
+        group: 'Go to',
+        label: 'Brain',
+        hint: 'G B',
+        icon: BrainCircuit,
+        keywords: 'edge ai assistant ask neural core jarvis',
+        run: go('/brain'),
       },
       {
         id: 'g-progress',

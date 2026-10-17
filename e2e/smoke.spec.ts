@@ -82,6 +82,15 @@ test('Posedge smoke: template, quick add + card, review, keyboard drag, export',
   await page.getByRole('button', { name: 'Export backup' }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toMatch(/^posedge-backup-\d{4}-\d{2}-\d{2}\.json$/);
+
+  // 6. The Brain: G then B opens the neural core; with no API key EDGE stays offline.
+  await page.keyboard.press('g');
+  await page.keyboard.press('b');
+  await expect(page.getByRole('heading', { name: /NEURAL CORE/ })).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: 'Nodes' }).getByText('DV Interview Prep'),
+  ).toBeVisible();
+  await expect(page.getByText(/EDGE is offline/)).toBeVisible();
 });
 
 test('deep link survives a hard refresh', async ({ page }) => {
