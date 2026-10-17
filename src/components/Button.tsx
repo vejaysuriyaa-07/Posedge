@@ -11,7 +11,7 @@ const VARIANTS: Record<Variant, string> = {
 };
 
 const SIZES: Record<Size, string> = {
-  sm: 'min-h-8 px-2.5 text-[13px] gap-1.5',
+  sm: 'min-h-8 pointer-coarse:min-h-10 px-2.5 text-[13px] gap-1.5',
   md: 'min-h-10 px-3.5 text-sm gap-2',
 };
 
@@ -45,7 +45,7 @@ export const IconButton = forwardRef<
       type={type}
       aria-label={label}
       title={label}
-      className={`inline-grid shrink-0 place-items-center rounded-lg text-muted transition hover:bg-elevated hover:text-fg disabled:opacity-50 ${size === 'sm' ? 'size-8' : 'size-10'} ${className}`}
+      className={`inline-grid shrink-0 place-items-center rounded-lg text-muted transition hover:bg-elevated hover:text-fg disabled:opacity-50 ${size === 'sm' ? 'size-8 pointer-coarse:size-10' : 'size-10'} ${className}`}
       {...rest}
     />
   );

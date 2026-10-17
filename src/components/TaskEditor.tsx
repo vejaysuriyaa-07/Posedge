@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Check, Copy, RotateCcw, Star, Trash2 } from 'lucide-react';
+import { Check, Copy, RotateCcw, Star, Timer, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '../app/Toasts';
 import { useTaskActions } from '../app/useTaskActions';
@@ -40,6 +40,7 @@ export function TaskEditorHost() {
 }
 
 function TaskEditor({ task, onClose }: { task: Task; onClose: () => void }) {
+  const ui = useUi();
   const { projects, byId } = useProjects();
   const today = useToday();
   const { toast } = useToast();
@@ -98,6 +99,17 @@ function TaskEditor({ task, onClose }: { task: Task; onClose: () => void }) {
               <Check size={15} /> Complete
             </Button>
           )}
+          {!done ? (
+            <Button
+              onClick={async () => {
+                await flushText();
+                ui.openFocus(task.id);
+              }}
+              aria-label="Start a focus timer for this task"
+            >
+              <Timer size={15} /> Focus
+            </Button>
+          ) : null}
           <Button onClick={() => void actions.duplicate(task.id)}>
             <Copy size={15} /> Duplicate
           </Button>

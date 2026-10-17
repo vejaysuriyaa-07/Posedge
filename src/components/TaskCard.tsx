@@ -74,7 +74,7 @@ export function TaskCard({
         aria-label={`${done ? 'Mark not done' : 'Complete'}: ${task.title}`}
         onClick={onToggle}
         onAnimationEnd={() => setPop(false)}
-        className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border-2 transition-colors ${
+        className={`relative mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border-2 transition-colors before:absolute before:-inset-2 before:content-[''] ${
           done
             ? 'border-(--pc,var(--pe-brand)) bg-(--pc,var(--pe-brand)) text-bg'
             : 'border-muted/60 hover:border-(--pc,var(--pe-brand))'

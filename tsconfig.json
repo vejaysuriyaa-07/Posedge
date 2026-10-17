@@ -18,7 +18,7 @@
     "skipLibCheck": true,
     "noEmit": true,
     "useDefineForClassFields": true,
-    "types": ["vite/client", "node", "vite-plugin-pwa/react", "vite-plugin-pwa/info"]
+    "types": ["vite/client", "node", "vite-plugin-pwa/vanillajs"]
   },
   "include": ["src", "e2e", "vite.config.ts", "playwright.config.ts"]
 }

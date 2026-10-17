@@ -75,7 +75,7 @@ export default function WeekPage() {
             {weekTasks.length ? Math.round((doneCount / weekTasks.length) * 100) : 0}%
           </span>
         </ProgressRing>
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+        <div className="flex min-w-0 basis-full flex-wrap items-center gap-1.5 sm:basis-auto sm:flex-1">
           {big3.map((t) => {
             const p = byId.get(t.projectId);
             return (

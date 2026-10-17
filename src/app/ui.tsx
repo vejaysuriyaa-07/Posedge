@@ -16,6 +16,8 @@ interface UiState {
   helpOpen: boolean;
   newProjectOpen: boolean;
   focusOpen: boolean;
+  /** Task to preselect when the focus timer opens. */
+  focusTaskId?: string;
   /** Monday of the week the Week view shows; quick-add @mon..@sun resolve against it. */
   viewedWeek: string;
 }
@@ -31,6 +33,7 @@ interface UiApi extends UiState {
   setHelpOpen: (open: boolean) => void;
   setNewProjectOpen: (open: boolean) => void;
   setFocusOpen: (open: boolean) => void;
+  openFocus: (taskId?: string) => void;
   setViewedWeek: (weekStart: string) => void;
 }
 
@@ -65,7 +68,9 @@ export function UiProvider({ children }: { children: ReactNode }) {
       setPaletteOpen: (paletteOpen) => patch({ paletteOpen }),
       setHelpOpen: (helpOpen) => patch({ helpOpen }),
       setNewProjectOpen: (newProjectOpen) => patch({ newProjectOpen }),
-      setFocusOpen: (focusOpen) => patch({ focusOpen }),
+      setFocusOpen: (focusOpen) =>
+        patch({ focusOpen, ...(focusOpen ? {} : { focusTaskId: undefined }) }),
+      openFocus: (taskId) => patch({ focusOpen: true, focusTaskId: taskId, editTaskId: undefined }),
       setViewedWeek: (viewedWeek) =>
         setState((s) => (s.viewedWeek === viewedWeek ? s : { ...s, viewedWeek })),
     }),

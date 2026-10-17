@@ -243,7 +243,7 @@ export function WeekBoard({
             return (
               <div
                 key={d}
-                className={`flex min-h-48 flex-col rounded-xl border bg-surface/70 p-2.5 ${isToday ? 'border-brand/60' : 'border-border'} ${rest ? 'hatch' : ''}`}
+                className={`flex min-h-28 flex-col md:min-h-48 rounded-xl border bg-surface/70 p-2.5 ${isToday ? 'border-brand/60' : 'border-border'} ${rest ? 'hatch' : ''}`}
               >
                 <div className="mb-2 px-0.5">
                   <div className="flex items-baseline justify-between gap-2">

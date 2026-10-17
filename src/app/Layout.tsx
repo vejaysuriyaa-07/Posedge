@@ -6,6 +6,10 @@ import { NewProjectDialog } from '../features/projects/ProjectForm';
 import { useHotkeys } from '../hooks/useHotkeys';
 import { BottomNav } from './BottomNav';
 import { PRIMARY_NAV, SECONDARY_NAV } from './navItems';
+import { PwaStatus } from './PwaStatus';
+import { CommandPalette } from './CommandPalette';
+import { HelpDialog } from './HelpDialog';
+import { FocusTimer } from './FocusTimer';
 import { QuickAddDialog } from './QuickAdd';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
@@ -80,6 +84,10 @@ export function Layout() {
       <LockItInHost />
       <NewProjectDialog />
       <WelcomeDialog />
+      <PwaStatus />
+      <CommandPalette />
+      <HelpDialog />
+      <FocusTimer />
     </div>
   );
 }

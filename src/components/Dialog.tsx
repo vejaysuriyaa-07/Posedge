@@ -38,7 +38,7 @@ export function Dialog({
   if (!open) return null;
   return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex justify-center bg-black/50 p-4 backdrop-blur-[2px] ${top ? 'items-start pt-[12vh]' : 'items-end sm:items-center'}`}
+      className={`animate-fade-in fixed inset-0 z-50 flex justify-center bg-black/50 p-4 backdrop-blur-[2px] ${top ? 'items-start pt-[12vh]' : 'items-end sm:items-center'}`}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -50,7 +50,7 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
-        className={`flex max-h-[88dvh] w-full ${WIDTHS[size]} flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-2xl outline-none`}
+        className={`animate-dialog-in flex max-h-[88dvh] w-full ${WIDTHS[size]} flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-2xl outline-none`}
       >
         <div className={`flex items-start gap-3 px-5 pt-4 ${hideTitle ? 'sr-only' : ''}`}>
           <div className="min-w-0 flex-1">

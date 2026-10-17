@@ -86,7 +86,7 @@ export default function TodayPage() {
           <h1 className="text-2xl">{greeting(now)}, VJ</h1>
           <p className="text-muted">{formatDate(today, 'EEEE, MMMM d')}</p>
         </div>
-        <div className="flex items-center gap-4 text-[13px]">
+        <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 text-[13px] sm:w-auto">
           <span className="flex items-center gap-1.5">
             <Flame
               size={16}
@@ -283,7 +283,7 @@ function Overdue({
           className={`transition-transform ${open ? '' : '-rotate-90'}`}
           aria-hidden
         />
-        <span className="font-medium">Carried over</span>
+        <span className="font-medium">Overdue</span>
         <span className="tabular text-muted">{tasks.length}</span>
         <span className="ml-auto text-[12px] text-muted">No rush. Pick what still matters.</span>
       </button>

@@ -2,7 +2,18 @@
 
 All notable changes to Posedge. Dates are local (America/Los_Angeles).
 
-## [Unreleased]
+## [1.0.0] - 2026-10-16
+
+### Phase 3: Polish
+
+- Installable PWA: manifest, icons, offline precache (fonts included), automatic updates with an
+  "Updated to new version" toast, iOS home screen meta tags.
+- Command palette (Ctrl/Cmd+K) for navigation, actions and task search; `?` shortcut help dialog.
+- Optional 25/50-minute focus timer that survives reloads and logs focus sessions (+1 XP per 5 minutes).
+- Dialog and sheet entry animations, compact day-column cards, phone layouts for Today and Week,
+  40px touch targets on touch screens.
+- Playwright smoke test (template, quick add, Lock it in, review, keyboard drag, export, deep-link refresh).
+- README completed: deploy steps, installing, backups, the Claude import loop and shortcuts.
 
 ### Phase 2: Motivation (2026-10-16)
 

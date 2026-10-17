@@ -1,4 +1,4 @@
-import { Flame, Plus, Snowflake } from 'lucide-react';
+import { Flame, Plus, Search, Snowflake, Timer } from 'lucide-react';
 import { Logo } from '../components/Logo';
 import { Kbd } from '../components/Kbd';
 import { Tooltip } from '../components/Tooltip';
@@ -74,6 +74,23 @@ export function TopBar() {
       <LevelChip />
       <div className="flex-1" />
       <StreakChip />
+      <button
+        type="button"
+        onClick={() => ui.openFocus()}
+        className="hidden size-10 place-items-center rounded-lg text-muted hover:bg-elevated hover:text-fg sm:grid"
+        aria-label="Start a focus timer"
+        title="Focus timer"
+      >
+        <Timer size={18} />
+      </button>
+      <button
+        type="button"
+        onClick={() => ui.setPaletteOpen(true)}
+        className="hidden min-h-10 items-center gap-2 rounded-lg border border-border px-3 text-[13px] text-muted hover:text-fg md:flex"
+        aria-label="Open command palette"
+      >
+        <Search size={15} /> Search <Kbd>⌘K</Kbd>
+      </button>
       <button
         type="button"
         onClick={() => ui.openQuickAdd()}

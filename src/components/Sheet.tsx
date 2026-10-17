@@ -30,7 +30,7 @@ export function Sheet({
   if (!open) return null;
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-end bg-black/45 backdrop-blur-[2px] md:items-stretch"
+      className="animate-fade-in fixed inset-0 z-50 flex items-end justify-end bg-black/45 backdrop-blur-[2px] md:items-stretch"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -41,7 +41,7 @@ export function Sheet({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`flex max-h-[92dvh] w-full flex-col rounded-t-2xl border border-border bg-surface shadow-2xl outline-none md:max-h-none md:rounded-none md:border-y-0 md:border-r-0 ${width === 'lg' ? 'md:max-w-2xl' : 'md:max-w-md'}`}
+        className={`animate-sheet-in flex max-h-[92dvh] w-full flex-col rounded-t-2xl border border-border bg-surface shadow-2xl outline-none md:max-h-none md:rounded-none md:border-y-0 md:border-r-0 ${width === 'lg' ? 'md:max-w-2xl' : 'md:max-w-md'}`}
       >
         <div className="flex items-start gap-3 border-b border-border px-5 py-4">
           <div className="min-w-0 flex-1">

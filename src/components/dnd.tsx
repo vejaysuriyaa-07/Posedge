@@ -303,7 +303,7 @@ export function SortableItem({
       onKeyDown={onKeyDown as never}
       aria-label={`Move ${label}`}
       aria-roledescription="draggable task"
-      className="-ml-1 grid h-6 w-5 shrink-0 cursor-grab touch-none place-items-center rounded text-muted/50 hover:text-muted focus-visible:text-fg"
+      className="-ml-1 grid h-6 w-5 shrink-0 cursor-grab touch-none place-items-center rounded text-muted/50 hover:text-muted focus-visible:text-fg pointer-coarse:h-10"
     >
       <GripVertical size={14} aria-hidden />
     </button>

@@ -186,3 +186,42 @@
   padding-left: 0.75rem;
   color: var(--pe-muted);
 }
+
+/* Entry animations (disabled under prefers-reduced-motion by the rule above). */
+@keyframes pe-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+}
+@keyframes pe-sheet-in {
+  from {
+    opacity: 0.6;
+    transform: translateX(24px);
+  }
+}
+@keyframes pe-sheet-up {
+  from {
+    opacity: 0.6;
+    transform: translateY(24px);
+  }
+}
+@keyframes pe-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.animate-dialog-in {
+  animation: pe-dialog-in 180ms ease-out;
+}
+.animate-sheet-in {
+  animation: pe-sheet-up 200ms ease-out;
+}
+@media (min-width: 48rem) {
+  .animate-sheet-in {
+    animation-name: pe-sheet-in;
+  }
+}
+.animate-fade-in {
+  animation: pe-fade-in 150ms ease-out;
+}
