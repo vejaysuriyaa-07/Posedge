@@ -11,7 +11,7 @@ import {
 import { Link } from 'react-router';
 import type { GraphOptions, KnowledgeGraph as Graph } from '../../domain/brain';
 import type { GraphSettings, ReplayState } from './graphEngine';
-import { GraphSettingsPopover } from './GraphSettings';
+import { GraphSettingsPopover, type PopoverPosition } from './GraphSettings';
 import { KnowledgeGraph, type KnowledgeGraphHandle } from './KnowledgeGraph';
 
 interface Props {
@@ -79,9 +79,19 @@ function formatBorn(iso: string): string {
 export function GraphPanel({ expandButtonRef, ...p }: Props) {
   const graphRef = useRef<KnowledgeGraphHandle>(null);
   const settingsBtn = useRef<HTMLButtonElement>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsPos, setSettingsPos] = useState<PopoverPosition | null>(null);
+  const settingsOpen = settingsPos !== null;
   const [replay, setReplay] = useState<ReplayState>({ active: false });
-  const closeSettings = useCallback(() => setSettingsOpen(false), []);
+  const closeSettings = useCallback(() => setSettingsPos(null), []);
+  const toggleSettings = () => {
+    const r = settingsBtn.current?.getBoundingClientRect();
+    if (settingsOpen || !r) return setSettingsPos(null);
+    setSettingsPos({
+      top: r.bottom + 8,
+      right: Math.max(8, window.innerWidth - r.right),
+      maxHeight: Math.max(180, window.innerHeight - r.bottom - 16),
+    });
+  };
   const firstRender = useRef(true);
 
   // Entering or leaving full screen: fit the graph to its new size.
@@ -117,7 +127,9 @@ export function GraphPanel({ expandButtonRef, ...p }: Props) {
   ]
     .filter(Boolean)
     .join(' · ');
-  const summary = `Graph of ${countText}. Projects: ${projects.map((n) => n.label).join(', ')}.`;
+  const summary = projects.length
+    ? `Graph of ${countText}. Projects: ${projects.map((n) => n.label).join(', ')}.`
+    : 'Graph: no active projects yet.';
   const toggle = (key: keyof GraphOptions) => p.onOptions({ ...p.options, [key]: !p.options[key] });
 
   return (
@@ -223,7 +235,7 @@ export function GraphPanel({ expandButtonRef, ...p }: Props) {
             aria-haspopup="dialog"
             aria-label="Graph settings"
             title="Graph settings"
-            onClick={() => setSettingsOpen((o) => !o)}
+            onClick={toggleSettings}
           >
             <SlidersHorizontal size={15} />
           </button>
@@ -238,12 +250,13 @@ export function GraphPanel({ expandButtonRef, ...p }: Props) {
             {p.expanded ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
           </button>
         </div>
-        {settingsOpen ? (
+        {settingsPos ? (
           <GraphSettingsPopover
             settings={p.settings}
             onChange={p.onSettings}
             onClose={closeSettings}
             anchor={settingsBtn}
+            position={settingsPos}
           />
         ) : null}
       </header>
@@ -287,6 +300,10 @@ export function GraphPanel({ expandButtonRef, ...p }: Props) {
             className={`absolute left-3 z-10 w-[min(17rem,calc(100%-8.5rem))] rounded-xl border border-border bg-elevated p-3 shadow-card ${
               p.expanded ? 'top-3' : 'bottom-3'
             }`}
+            // Stay clear of the answers drawer and the zoom controls beside it.
+            style={
+              p.rightInset ? { maxWidth: `calc(100% - ${p.rightInset}px - 8.5rem)` } : undefined
+            }
           >
             <div className="flex items-start gap-2">
               <span className="text-lg leading-6" aria-hidden>
@@ -333,7 +350,7 @@ export function GraphPanel({ expandButtonRef, ...p }: Props) {
         {p.overlay}
       </div>
 
-      {projects.length && !p.expanded ? (
+      {projects.length ? (
         <footer className="border-t border-border px-3 py-2">
           <ul className="scrollbar-thin flex gap-1.5 overflow-x-auto" aria-label="Focus a project">
             {projects.map((n) => (

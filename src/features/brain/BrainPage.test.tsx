@@ -209,6 +209,26 @@ describe('Brain', () => {
     );
   });
 
+  it('in full screen, Escape first clears a typed search, then exits', async () => {
+    const user = userEvent.setup();
+    await seed();
+    render(
+      <Providers>
+        <BrainPage />
+      </Providers>,
+    );
+    await user.click(screen.getByRole('button', { name: 'Full screen graph' }));
+    const search = screen.getByLabelText('Search the graph');
+    await user.type(search, 'sva');
+    await user.keyboard('{Escape}');
+    expect(search).toHaveValue('');
+    expect(screen.getByRole('complementary', { name: 'Graph, full screen' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(
+      screen.queryByRole('complementary', { name: 'Graph, full screen' }),
+    ).not.toBeInTheDocument();
+  });
+
   it('searches the graph and reports matches', async () => {
     const user = userEvent.setup();
     await seed();

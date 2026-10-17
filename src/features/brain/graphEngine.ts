@@ -304,6 +304,9 @@ export class GraphEngine {
     for (const g of graph.nodes) {
       const old = prev.get(g.id);
       if (old) {
+        // Optional fields may have been cleared (e.g. a task's date); don't keep stale values.
+        old.date = undefined;
+        old.status = undefined;
         next.set(g.id, Object.assign(old, g));
         continue;
       }
@@ -343,7 +346,10 @@ export class GraphEngine {
       stats.set(n.projectId, s);
     }
     this.stats = stats;
-    if (this.hoverId && !next.has(this.hoverId)) this.setHover(undefined);
+    if (this.hoverId && !next.has(this.hoverId)) {
+      this.setHover(undefined);
+      this.callbacks.onTooltip(null);
+    }
 
     let added = 0;
     for (const id of next.keys()) if (!prev.has(id)) added++;
@@ -384,16 +390,26 @@ export class GraphEngine {
 
   focus(id: string) {
     const n = this.nodes.get(id);
-    const { w, h } = this.size;
-    if (!n || w < 2) return;
+    if (!n || this.size.w < 2) return;
     this.userMoved = true;
     const k = clamp(Math.max(this.view.k, 1.7), MIN_K, MAX_K);
-    this.moveView({ k, x: w / 2 - (n.x ?? 0) * k, y: h / 2 - (n.y ?? 0) * k }, true);
+    const c = this.visibleCenter();
+    this.moveView({ k, x: c.x - (n.x ?? 0) * k, y: c.y - (n.y ?? 0) * k }, true);
+  }
+
+  /** Center of the area not covered by floating UI. */
+  private visibleCenter() {
+    const { w, h } = this.size;
+    return {
+      x: Math.max(40, w - this.insets.right) / 2,
+      y: Math.max(40, h - this.insets.bottom) / 2,
+    };
   }
 
   zoomBy(factor: number) {
     this.userMoved = true;
-    this.zoomSmooth(factor, this.size.w / 2, this.size.h / 2);
+    const c = this.visibleCenter();
+    this.zoomSmooth(factor, c.x, c.y);
   }
 
   /** Grows the graph node by node in creation order (Obsidian's "animate"). Call again to stop. */

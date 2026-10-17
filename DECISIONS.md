@@ -205,6 +205,21 @@ Ambiguities resolved while building Posedge, and any deviations from [`SPEC.md`]
     - the Progress donut legend, which now says "+N more" past 8 projects;
     - compact Week-column cards, whose markers and keyboard handle moved into the meta row so titles
       keep the full width.
+53. **Independent review fixes.** A separate review pass, with each fix then checked in Playwright, found
+    and fixed:
+    - **Settings popover:** it was clipped by the docked panel; it now renders in a portal positioned on
+      screen. Its capture-phase Escape handler stole the key from open dialogs; Escape now goes to a
+      dialog first, and only the popover's own Escape marks the event as handled.
+    - **Full screen:** focus and zoom now centre on the area not covered by the drawer and ask bar. The
+      drawer sits beside the graph only from 1024px, and below that a source click hides it. The app
+      chrome behind the overlay is now inert, Escape works from an empty field, and the project chips
+      stay visible.
+    - **Topics:** labels showed truncated stems ("#analysi"), project-name-only matches made topics like
+      "#pipeline", and some topics duplicated each other. Labels now show the shortest real form, a topic
+      needs two real items, and duplicates merge.
+    - **Small fixes:** duplicate ids on the two follow-up boxes (now `useId`), a stale tooltip after its
+      node was filtered out, stale dates on reused nodes, plurals in "Reading…", the source count
+      including items not in the graph, and Rewrite now stops the old answer being read aloud.
 
 ## Feature checklist (SPEC.md, re-read at the end of Phase 3)
 

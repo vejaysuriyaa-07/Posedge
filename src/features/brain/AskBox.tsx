@@ -1,5 +1,5 @@
 import { ArrowUp, Mic, Square, Volume2, VolumeX } from 'lucide-react';
-import type { KeyboardEvent, Ref } from 'react';
+import { useId, type KeyboardEvent, type Ref } from 'react';
 
 export interface VoiceControls {
   supported: boolean;
@@ -28,6 +28,7 @@ const MAX_HEIGHT = 200;
 /** The ask field: grows with its text; Enter sends, Shift+Enter adds a line. */
 export function AskBox({ inputRef, ...p }: Props) {
   const hero = p.variant === 'hero';
+  const id = useId();
   const text = p.voice.listening ? p.voice.interim : p.value;
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
@@ -43,11 +44,11 @@ export function AskBox({ inputRef, ...p }: Props) {
         p.onSubmit();
       }}
     >
-      <label htmlFor={`ask-${p.variant}`} className="sr-only">
+      <label htmlFor={id} className="sr-only">
         {hero ? 'Ask your brain' : 'Ask a follow-up'}
       </label>
       <textarea
-        id={`ask-${p.variant}`}
+        id={id}
         ref={inputRef}
         rows={hero ? 2 : 1}
         value={text}

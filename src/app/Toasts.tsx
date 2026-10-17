@@ -77,6 +77,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       </div>
       <div
         aria-live="polite"
+        data-overlay-safe
         className="pointer-events-none fixed inset-x-0 bottom-20 z-[60] flex flex-col items-center gap-2 px-4 md:bottom-6"
       >
         <AnimatePresence initial={false}>

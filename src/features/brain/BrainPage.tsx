@@ -19,7 +19,7 @@ import { db, updateSettings } from '../../db/db';
 import { buildKnowledgeGraph } from '../../domain/brain';
 import { useAi } from '../../hooks/useAi';
 import { useProjects } from '../../hooks/useData';
-import { useHotkeys } from '../../hooks/useHotkeys';
+import { isTypingTarget, useHotkeys } from '../../hooks/useHotkeys';
 import { useIsDark } from '../../hooks/useIsDark';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useSettings } from '../../hooks/useSettings';
@@ -71,10 +71,12 @@ export default function BrainPage() {
   const [focus, setFocus] = useState<{ id: string; seq: number }>();
   const [expanded, setExpanded] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(true);
-  const wide = useMediaQuery('(min-width: 768px)');
+  // Wide enough for the answers drawer to sit beside the graph rather than over it.
+  const wide = useMediaQuery('(min-width: 1024px)');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const overlayInputRef = useRef<HTMLTextAreaElement>(null);
   const expandBtn = useRef<HTMLButtonElement>(null);
+  const overlayRef = useRef<HTMLElement>(null);
 
   const speaker = useSpeaker(settings.aiVoiceReplies);
   const thread = useAsk({
@@ -132,10 +134,16 @@ export default function BrainPage() {
 
   const { exchanges, refs } = thread;
   const last = exchanges[exchanges.length - 1];
-  const sourceIds = useMemo(
-    () => new Set(last ? citedRefs(last.answer, (r) => r in refs).map((r) => refs[r]!.id) : []),
-    [last, refs],
-  );
+  // Cited items that are in the graph right now (e.g. a done task is absent while "Completed" is off).
+  const sourceIds = useMemo(() => {
+    if (!last) return new Set<string>();
+    const inGraph = new Set(graph.nodes.map((n) => n.id));
+    return new Set(
+      citedRefs(last.answer, (r) => r in refs)
+        .map((r) => refs[r]!.id)
+        .filter((id) => inGraph.has(id)),
+    );
+  }, [last, refs, graph]);
   const query = search.trim().toLowerCase();
   const matches = useMemo(
     () =>
@@ -167,7 +175,11 @@ export default function BrainPage() {
   );
   const openRef = (info: RefInfo) => {
     if (info.kind === 'task') ui.openTask(info.id);
-    else focusProject(info.projectId);
+    else {
+      focusProject(info.projectId);
+      // On narrower screens the drawer covers the graph: get it out of the way.
+      if (expanded && !wide) setDrawerOpen(false);
+    }
   };
 
   const closeExpanded = useCallback(() => {
@@ -181,21 +193,44 @@ export default function BrainPage() {
       (expanded ? overlayInputRef : inputRef).current?.focus();
     },
   });
-  useHotkeys({ escape: () => closeExpanded() }, { enabled: expanded });
 
-  // Full screen: keep the page behind it from scrolling.
+  // Full screen: the page behind can't scroll or take focus, and Escape exits (from an empty field
+  // too; a dialog or the settings popover handles its own Escape first).
   useEffect(() => {
     if (!expanded) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    const touched: Element[] = [];
+    const root = document.getElementById('root');
+    for (let el: Element | null = overlayRef.current; el && el !== root; el = el.parentElement) {
+      for (const sib of el.parentElement?.children ?? []) {
+        if (sib === el || sib.hasAttribute('inert') || sib.hasAttribute('data-overlay-safe'))
+          continue;
+        sib.setAttribute('inert', '');
+        touched.push(sib);
+      }
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      if (document.querySelector('[aria-modal="true"]')) return;
+      const t = e.target as HTMLInputElement | null;
+      if (isTypingTarget(t) && t?.value) return;
+      e.preventDefault();
+      closeExpanded();
+    };
+    window.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = prev;
+      touched.forEach((s) => s.removeAttribute('inert'));
+      window.removeEventListener('keydown', onKey);
     };
-  }, [expanded]);
+  }, [expanded, closeExpanded]);
 
   const asked = new Set(exchanges.map((x) => x.question));
   const related = RELATED.filter((q) => !asked.has(q)).slice(0, 3);
-  const readingLabel = `Reading ${reads.projects} projects and ${reads.tasks} open tasks…`;
+  const readingLabel = `Reading ${reads.projects} project${reads.projects === 1 ? '' : 's'} and ${
+    reads.tasks
+  } open task${reads.tasks === 1 ? '' : 's'}…`;
   const askBoxProps = {
     value: input,
     onChange: setInput,
@@ -232,7 +267,10 @@ export default function BrainPage() {
       readingLabel={readingLabel}
       canSpeak={speaker.supported}
       onOpenRef={openRef}
-      onRetry={thread.retry}
+      onRetry={() => {
+        speaker.cancel();
+        thread.retry();
+      }}
       onSpeak={speaker.speak}
       onCopy={copy}
       related={!thread.busy && last?.status === 'done' ? related : []}
@@ -251,7 +289,7 @@ export default function BrainPage() {
     <>
       {drawerShown ? (
         <aside
-          className="absolute inset-y-0 right-0 z-20 flex w-full flex-col border-l border-border bg-surface/95 backdrop-blur md:w-[416px]"
+          className="absolute inset-y-0 right-0 z-20 flex w-full flex-col border-l border-border bg-surface/95 backdrop-blur lg:w-[416px]"
           aria-label="Answers"
         >
           <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
@@ -384,6 +422,7 @@ export default function BrainPage() {
       </div>
 
       <aside
+        ref={overlayRef}
         className={
           expanded
             ? 'fixed inset-0 z-[45] bg-bg'

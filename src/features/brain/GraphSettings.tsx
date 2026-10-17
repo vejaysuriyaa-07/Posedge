@@ -1,5 +1,6 @@
 import { RotateCcw } from 'lucide-react';
 import { useEffect, useRef, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import { DEFAULT_GRAPH_SETTINGS, type GraphSettings } from './graphEngine';
 import { SETTING_RANGES } from './useGraphPrefs';
 
@@ -23,37 +24,63 @@ const GROUPS: { title: string; items: { key: keyof GraphSettings; label: string 
   },
 ];
 
+export interface PopoverPosition {
+  top: number;
+  right: number;
+  maxHeight: number;
+}
+
 interface Props {
   settings: GraphSettings;
   onChange: (s: GraphSettings) => void;
   onClose: () => void;
   /** The button that opened the popover (clicks on it shouldn't count as "outside"). */
   anchor: RefObject<HTMLElement | null>;
+  /** Viewport position under the anchor, measured when it opened. */
+  position: PopoverPosition;
 }
 
-/** Obsidian-style graph settings: live sliders for the forces and the display. */
-export function GraphSettingsPopover({ settings, onChange, onClose, anchor }: Props) {
+/**
+ * Obsidian-style graph settings: live sliders for the forces and the display. Rendered in a portal
+ * so a short panel can't clip it; it closes on outside clicks, Escape, scroll and resize.
+ */
+export function GraphSettingsPopover({ settings, onChange, onClose, anchor, position }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    ref.current?.querySelector('input')?.focus();
+  }, []);
+
+  useEffect(() => {
+    const inside = (t: EventTarget | null) =>
+      t instanceof Node && (ref.current?.contains(t) || anchor.current?.contains(t));
     const onDown = (e: PointerEvent) => {
-      const t = e.target as Node;
-      if (ref.current?.contains(t) || anchor.current?.contains(t)) return;
-      onClose();
+      if (!inside(e.target)) onClose();
     };
-    // Capture phase so Escape closes this before anything else (like full screen) sees it.
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      // An open dialog owns Escape.
+      if (document.querySelector('[aria-modal="true"]')) return;
+      // Marks the key as handled so full screen doesn't also close.
       e.preventDefault();
-      e.stopPropagation();
       onClose();
-      anchor.current?.focus();
+      const active = document.activeElement;
+      if (!active || active === document.body || ref.current?.contains(active)) {
+        anchor.current?.focus();
+      }
+    };
+    const onMove = (e: Event) => {
+      if (!inside(e.target)) onClose();
     };
     document.addEventListener('pointerdown', onDown);
-    document.addEventListener('keydown', onKey, true);
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('resize', onMove);
+    window.addEventListener('scroll', onMove, true);
     return () => {
       document.removeEventListener('pointerdown', onDown);
-      document.removeEventListener('keydown', onKey, true);
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', onMove);
+      window.removeEventListener('scroll', onMove, true);
     };
   }, [onClose, anchor]);
 
@@ -61,12 +88,13 @@ export function GraphSettingsPopover({ settings, onChange, onClose, anchor }: Pr
     (k) => settings[k] === DEFAULT_GRAPH_SETTINGS[k],
   );
 
-  return (
+  return createPortal(
     <div
       ref={ref}
       role="dialog"
       aria-label="Graph settings"
-      className="scrollbar-thin absolute top-full right-0 z-30 mt-2 max-h-[min(70dvh,34rem)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-border bg-elevated p-4 shadow-xl"
+      className="scrollbar-thin fixed z-[46] w-72 max-w-[calc(100vw-1rem)] overflow-y-auto rounded-xl border border-border bg-elevated p-4 text-fg shadow-xl"
+      style={{ top: position.top, right: position.right, maxHeight: position.maxHeight }}
     >
       {GROUPS.map((g, gi) => (
         <fieldset key={g.title} className={gi ? 'mt-4 border-t border-border pt-4' : ''}>
@@ -111,6 +139,7 @@ export function GraphSettingsPopover({ settings, onChange, onClose, anchor }: Pr
       >
         <RotateCcw size={13} /> Reset to defaults
       </button>
-    </div>
+    </div>,
+    document.body,
   );
 }

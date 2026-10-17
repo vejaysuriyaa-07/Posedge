@@ -6,6 +6,7 @@ import {
   MAX_TOPICS,
   neighborIds,
   speakable,
+  stem,
   takeSentences,
   topicTerms,
 } from './brain';
@@ -184,9 +185,60 @@ describe('topics', () => {
       ['python', 'python'],
       ['llm', 'LLM'],
       ['reviewing', 'reviewing'],
-      ['class', 'class'],
+      ['class', 'classes'],
     ]);
     expect([...topicTerms('Read the paper and finish the notes').keys()]).toEqual([]);
+  });
+
+  it('stems plurals without mangling words that end in s', () => {
+    expect(
+      [
+        'classes',
+        'patches',
+        'caches',
+        'boxes',
+        'policies',
+        'cycles',
+        'analysis',
+        'status',
+        'focus',
+        'pass',
+      ].map(stem),
+    ).toEqual([
+      'class',
+      'patch',
+      'cache',
+      'box',
+      'policy',
+      'cycle',
+      'analysis',
+      'status',
+      'focus',
+      'pass',
+    ]);
+    expect(topicTerms('Status of the analysis').get('analysis')).toBe('analysis');
+  });
+
+  it('needs two real items (not just a project name), shows the shortest form, and merges duplicate topics', () => {
+    const projects = [
+      project('a', 1, { name: 'New-Grad Job Pipeline' }),
+      project('b', 2, { name: 'Camera ISP' }),
+    ];
+    const tasks = [
+      task({ projectId: 'b', title: 'RTL pipeline blocks' }),
+      task({ projectId: 'a', title: 'Blocking vs nonblocking classes' }),
+      task({ projectId: 'b', title: 'Blocking vs nonblocking class review' }),
+      task({ projectId: 'a', title: 'SV classes and inheritance' }),
+    ];
+    const g = buildKnowledgeGraph(
+      { today: TODAY, projects, tasks, milestones: [], cards: [] },
+      { includeCards: false, includeDone: false, includeTopics: true },
+    );
+    const labels = g.nodes.filter((nd) => nd.kind === 'topic').map((nd) => nd.label);
+    // "pipeline" has only one real item; "blocking" and "nonblocking" link the same two tasks.
+    expect(labels).not.toContain('pipeline');
+    expect(labels.filter((l) => l === 'blocking' || l === 'nonblocking')).toHaveLength(1);
+    expect(labels).toContain('class');
   });
 
   it('bridges projects that share a term, and skips terms used inside one project only', () => {

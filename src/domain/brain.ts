@@ -80,18 +80,23 @@ export function topicTerms(text: string): Map<string, string> {
   const out = new Map<string, string>();
   for (const tok of text.match(/[A-Za-z][A-Za-z0-9]*(?:\+\+|#)?/g) ?? []) {
     const acronym = /^[A-Z][A-Z0-9]{1,5}s?$/.test(tok) || /\+\+|#$/.test(tok);
-    let key = tok.toLowerCase();
-    if (!acronym && (key.length < 4 || STOPWORDS.has(key))) continue;
-    if (acronym && /[A-Z0-9]s$/.test(tok)) key = key.slice(0, -1);
-    else if (!acronym && key.endsWith('ies') && key.length > 5) key = `${key.slice(0, -3)}y`;
-    else if (!acronym && /(ss|x|ch|sh)es$/.test(key)) key = key.slice(0, -2);
-    else if (!acronym && key.endsWith('s') && !key.endsWith('ss') && key.length > 4)
-      key = key.slice(0, -1);
+    const word = tok.toLowerCase();
+    if (!acronym && (word.length < 4 || STOPWORDS.has(word))) continue;
+    const key = acronym ? (/[A-Z0-9]s$/.test(tok) ? word.slice(0, -1) : word) : stem(word);
     if (STOPWORDS.has(key)) continue;
+    // Shown as written (acronyms keep their case, words are lowercased), never as the stem.
     if (!out.has(key))
-      out.set(key, acronym ? (/[A-Z0-9]s$/.test(tok) ? tok.slice(0, -1) : tok) : key);
+      out.set(key, acronym ? (/[A-Z0-9]s$/.test(tok) ? tok.slice(0, -1) : tok) : word);
   }
   return out;
+}
+
+/** Light English plural stemming, just enough to join "class"/"classes" and "cycle"/"cycles". */
+export function stem(word: string): string {
+  if (word.length > 5 && word.endsWith('ies')) return `${word.slice(0, -3)}y`;
+  if (/(ss|x|sh|[^a]ch)es$/.test(word)) return word.slice(0, -2);
+  if (word.length > 4 && word.endsWith('s') && !/(ss|us|is)$/.test(word)) return word.slice(0, -1);
+  return word;
 }
 
 const byOpenFirst = (a: Task, b: Task) =>
@@ -214,20 +219,34 @@ export function buildKnowledgeGraph(
 
   let topicCount = 0;
   if (opts.includeTopics) {
-    // A topic is a term shared by items in two or more projects: it bridges them, like a tag.
-    const terms = new Map<string, { display: string; items: Set<string>; projects: Set<string> }>();
+    // A topic is a term used by two or more items (besides project names) across two or more
+    // projects: it bridges them, like a tag. Its label is the shortest form seen ("class", not
+    // "classes"), and topics linking exactly the same items collapse into one.
+    const terms = new Map<
+      string,
+      { display: string; items: Set<string>; projects: Set<string>; own: number }
+    >();
     for (const n of nodes) {
       for (const [key, display] of topicTerms(n.label)) {
-        const t = terms.get(key) ?? { display, items: new Set(), projects: new Set() };
+        const t = terms.get(key) ?? { display, items: new Set(), projects: new Set(), own: 0 };
+        if (display.length < t.display.length) t.display = display;
         t.items.add(n.id);
         t.projects.add(n.projectId);
+        if (n.kind !== 'project') t.own++;
         terms.set(key, t);
       }
     }
     const born = new Map(nodes.map((n) => [n.id, n.born]));
+    const seen = new Set<string>();
     const topics = [...terms.entries()]
-      .filter(([, t]) => t.items.size >= 2 && t.projects.size >= 2)
+      .filter(([, t]) => t.own >= 2 && t.projects.size >= 2)
       .sort((a, b) => b[1].items.size - a[1].items.size || a[0].localeCompare(b[0]))
+      .filter(([, t]) => {
+        const signature = [...t.items].sort().join('|');
+        if (seen.has(signature)) return false;
+        seen.add(signature);
+        return true;
+      })
       .slice(0, MAX_TOPICS);
     for (const [key, t] of topics) {
       const id = `topic:${key}`;
