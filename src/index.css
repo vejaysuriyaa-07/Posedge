@@ -1,0 +1,136 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Theme tokens. Light values are the default; .dark overrides them (dark is the app default). */
+:root {
+  --pe-bg: #f7f8fa;
+  --pe-surface: #ffffff;
+  --pe-elevated: #ffffff;
+  --pe-border: #e4e7ec;
+  --pe-fg: #0f1320;
+  --pe-muted: #5b6475;
+  --pe-brand: #7c3aed;
+  --pe-brand-fg: #ffffff;
+  --pe-ring-glow: none;
+  --pe-shadow: 0 1px 2px rgb(15 19 32 / 0.06), 0 1px 3px rgb(15 19 32 / 0.08);
+  --pe-warn: #b45309;
+  --pe-ok: #047857;
+  --pe-danger: #be123c;
+  color-scheme: light;
+}
+
+.dark {
+  --pe-bg: #0b0d12;
+  --pe-surface: #141821;
+  --pe-elevated: #1b2030;
+  --pe-border: #232838;
+  --pe-fg: #e6e8ee;
+  --pe-muted: #9aa3b2;
+  --pe-brand: #a78bfa;
+  --pe-brand-fg: #0b0d12;
+  --pe-ring-glow: drop-shadow(0 0 6px rgb(167 139 250 / 0.35));
+  --pe-shadow: none;
+  --pe-warn: #fbbf24;
+  --pe-ok: #34d399;
+  --pe-danger: #fb7185;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --color-bg: var(--pe-bg);
+  --color-surface: var(--pe-surface);
+  --color-elevated: var(--pe-elevated);
+  --color-border: var(--pe-border);
+  --color-fg: var(--pe-fg);
+  --color-muted: var(--pe-muted);
+  --color-brand: var(--pe-brand);
+  --color-brand-fg: var(--pe-brand-fg);
+  --color-warn: var(--pe-warn);
+  --color-ok: var(--pe-ok);
+  --color-danger: var(--pe-danger);
+
+  --shadow-card: var(--pe-shadow);
+}
+
+@layer base {
+  html {
+    font-size: 14px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-bg font-sans text-fg antialiased;
+    min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-semibold tracking-tight;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--pe-brand);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: rgb(139 92 246 / 0.35);
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Diagonal hatching for rest days (heatmap cells and day columns). */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      135deg,
+      transparent 0 4px,
+      color-mix(in srgb, var(--pe-muted) 22%, transparent) 4px 5px
+    );
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--pe-border) transparent;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@keyframes pe-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-pop {
+  animation: pe-pop 220ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
