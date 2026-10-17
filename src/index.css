@@ -134,3 +134,55 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Rendered markdown (project notes). */
+.prose-posedge {
+  line-height: 1.6;
+}
+.prose-posedge > * + * {
+  margin-top: 0.6em;
+}
+.prose-posedge h1 {
+  font-size: 1.35rem;
+}
+.prose-posedge h2 {
+  font-size: 1.15rem;
+}
+.prose-posedge h3 {
+  font-size: 1rem;
+}
+.prose-posedge a {
+  color: var(--pe-brand);
+  text-decoration: underline;
+}
+.prose-posedge ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.prose-posedge ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.prose-posedge code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--pe-elevated);
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+}
+.prose-posedge pre {
+  background: var(--pe-bg);
+  border: 1px solid var(--pe-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  overflow-x: auto;
+}
+.prose-posedge pre code {
+  background: none;
+  padding: 0;
+}
+.prose-posedge blockquote {
+  border-left: 3px solid var(--pe-border);
+  padding-left: 0.75rem;
+  color: var(--pe-muted);
+}

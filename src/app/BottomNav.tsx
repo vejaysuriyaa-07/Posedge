@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router';
 import { Brain, CalendarDays, Ellipsis, FolderKanban, Sun } from 'lucide-react';
+import { useReviewQueue } from '../hooks/useReviewQueue';
 
 const TABS = [
   { to: '/', label: 'Today', icon: Sun },
@@ -10,6 +11,7 @@ const TABS = [
 ];
 
 export function BottomNav() {
+  const { queue } = useReviewQueue();
   return (
     <nav
       aria-label="Main"
@@ -22,13 +24,19 @@ export function BottomNav() {
               to={to}
               end={to === '/'}
               className={({ isActive }) =>
-                `flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium ${
+                `relative flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium ${
                   isActive ? 'text-brand' : 'text-muted'
                 }`
               }
             >
               <Icon size={20} aria-hidden />
               {label}
+              {to === '/review' && queue.length > 0 ? (
+                <span className="tabular absolute top-1.5 left-1/2 ml-2 rounded-full bg-brand px-1.5 text-[10px] font-semibold text-brand-fg">
+                  {queue.length}
+                  <span className="sr-only"> due</span>
+                </span>
+              ) : null}
             </NavLink>
           </li>
         ))}
