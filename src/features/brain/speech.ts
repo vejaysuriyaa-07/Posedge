@@ -110,10 +110,11 @@ function pickVoice(): SpeechSynthesisVoice | undefined {
 }
 
 /**
- * Speaks streamed text sentence by sentence (so EDGE starts talking before the reply ends).
- * `feed` takes text deltas; `flush` speaks the tail; `cancel` stops immediately.
+ * Reads answers aloud. With `auto` on, `feed` speaks streamed text sentence by sentence (so the
+ * answer starts before it finishes) and `flush` speaks the tail. `speak` reads a whole answer on
+ * request; `cancel` stops immediately.
  */
-export function useSpeaker(enabled: boolean) {
+export function useSpeaker(auto: boolean) {
   const supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
   const [speaking, setSpeaking] = useState(false);
   const buffer = useRef('');
@@ -151,24 +152,34 @@ export function useSpeaker(enabled: boolean) {
 
   const feed = useCallback(
     (delta: string) => {
-      if (!enabled || !supported) return;
+      if (!auto || !supported) return;
       buffer.current += delta;
       const { sentences, rest } = takeSentences(buffer.current);
       buffer.current = rest;
       sentences.forEach(say);
     },
-    [enabled, supported, say],
+    [auto, supported, say],
   );
 
   const flush = useCallback(() => {
-    if (!enabled || !supported) {
+    if (!auto || !supported) {
       buffer.current = '';
       return;
     }
     const { sentences } = takeSentences(buffer.current, true);
     buffer.current = '';
     sentences.forEach(say);
-  }, [enabled, supported, say]);
+  }, [auto, supported, say]);
+
+  const speak = useCallback(
+    (text: string) => {
+      if (!supported) return;
+      window.speechSynthesis.cancel();
+      pending.current = 0;
+      takeSentences(text, true).sentences.forEach(say);
+    },
+    [supported, say],
+  );
 
   const cancel = useCallback(() => {
     buffer.current = '';
@@ -184,5 +195,5 @@ export function useSpeaker(enabled: boolean) {
     [supported],
   );
 
-  return { supported, speaking, feed, flush, cancel };
+  return { supported, speaking, feed, flush, speak, cancel };
 }

@@ -187,6 +187,89 @@
   color: var(--pe-muted);
 }
 
+/* Brain answers: reading typography, citation chips, streaming caret, typing dots. */
+.prose-answer {
+  font-size: 15.5px;
+  line-height: 1.75;
+}
+.prose-answer > * + * {
+  margin-top: 0.85em;
+}
+.prose-answer li + li {
+  margin-top: 0.3em;
+}
+.prose-answer strong {
+  font-weight: 600;
+}
+.pe-cite {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  margin: 0 0.15em;
+  padding: 0 0.3em;
+  border-radius: 999px;
+  background: var(--pe-elevated);
+  border: 1px solid var(--pe-border);
+  color: var(--pe-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  vertical-align: 0.15em;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    color 120ms,
+    border-color 120ms;
+}
+.pe-cite:hover {
+  color: var(--pe-brand);
+  border-color: var(--pe-brand);
+}
+.pe-caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.18em;
+  border-radius: 1px;
+  background: var(--pe-fg);
+  opacity: 0.55;
+  animation: pe-blink 1s steps(1) infinite;
+}
+.pe-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.pe-dots > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--pe-muted);
+  animation: pe-dot 1.2s ease-in-out infinite;
+}
+.pe-dots > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.pe-dots > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes pe-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes pe-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
 /* Entry animations (disabled under prefers-reduced-motion by the rule above). */
 @keyframes pe-dialog-in {
   from {

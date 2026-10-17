@@ -193,3 +193,62 @@ export function trimSnapshot(snapshot: Snapshot, cap = SNAPSHOT_TOKEN_CAP): Snap
   }
   return s;
 }
+
+export interface RefInfo {
+  kind: 'project' | 'milestone' | 'task';
+  /** The real record id. */
+  id: string;
+  title: string;
+  projectId: string;
+  projectName: string;
+  emoji: string;
+}
+
+/**
+ * Swaps record ids for short refs (`p1`, `m1`, `t1`) so the model can cite items cheaply, and
+ * returns the map back to real records.
+ */
+export function withShortRefs(snapshot: Snapshot): {
+  snapshot: Snapshot;
+  refs: Record<string, RefInfo>;
+} {
+  const refs: Record<string, RefInfo> = {};
+  const short = new Map<string, string>();
+  const projects = new Map(snapshot.projects.map((p) => [p.id, p]));
+  const info = (
+    kind: RefInfo['kind'],
+    ref: string,
+    id: string,
+    title: string,
+    projectId: string,
+  ) => {
+    const p = projects.get(projectId);
+    short.set(id, ref);
+    refs[ref] = { kind, id, title, projectId, projectName: p?.name ?? '', emoji: p?.emoji ?? '' };
+  };
+  snapshot.projects.forEach((p, i) => info('project', `p${i + 1}`, p.id, p.name, p.id));
+  snapshot.milestones.forEach((m, i) => info('milestone', `m${i + 1}`, m.id, m.title, m.projectId));
+  snapshot.tasks.forEach((t, i) => info('task', `t${i + 1}`, t.id, t.title, t.projectId));
+  const s = (id: string) => short.get(id) ?? id;
+  return {
+    snapshot: {
+      ...snapshot,
+      projects: snapshot.projects.map((p) => ({ ...p, id: s(p.id) })),
+      milestones: snapshot.milestones.map((m) => ({
+        ...m,
+        id: s(m.id),
+        projectId: s(m.projectId),
+      })),
+      tasks: snapshot.tasks.map((t) => {
+        const { milestoneId, ...rest } = t;
+        return {
+          ...rest,
+          id: s(t.id),
+          projectId: s(t.projectId),
+          ...(milestoneId && short.has(milestoneId) ? { milestoneId: s(milestoneId) } : {}),
+        };
+      }),
+    },
+    refs,
+  };
+}

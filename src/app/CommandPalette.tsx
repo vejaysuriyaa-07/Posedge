@@ -190,7 +190,7 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
         label: 'Brain',
         hint: 'G B',
         icon: BrainCircuit,
-        keywords: 'edge ai assistant ask neural core jarvis',
+        keywords: 'edge ai assistant ask graph knowledge',
         run: go('/brain'),
       },
       {

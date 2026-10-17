@@ -59,7 +59,7 @@ export function AiSettings({ s }: { s: Settings }) {
           <Sparkles size={16} className="text-brand" aria-hidden /> AI
         </h2>
         <p className="mt-0.5 text-[13px] text-muted">
-          Powers EDGE in the Brain. Uses your own Anthropic API key.
+          Powers "Ask your brain" in the Brain. Uses your own Anthropic API key.
         </p>
       </div>
       <Toggle
@@ -169,8 +169,8 @@ export function AiSettings({ s }: { s: Settings }) {
       <Toggle
         checked={s.aiVoiceReplies}
         onChange={(v) => void updateSettings({ aiVoiceReplies: v })}
-        label="Speak EDGE's replies"
-        description="Uses your browser's built-in voice. You can also toggle this in the Brain."
+        label="Read answers aloud"
+        description="Uses your browser's built-in voice. You can also toggle this from the ask box."
       />
       <label className="flex min-h-10 items-center gap-2 text-sm">
         <input

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { streamChat } from '../../ai/client';
+import { AiError, streamChat } from '../../ai/client';
 import { ToastProvider } from '../../app/Toasts';
 import { UiProvider } from '../../app/ui';
 import { resetAllData } from '../../db/backup';
@@ -11,14 +11,14 @@ import { getSettings, updateSettings } from '../../db/db';
 import { createProject } from '../../db/ops/projects';
 import { createTask } from '../../db/ops/tasks';
 import { mondayOf, todayStr } from '../../domain/week';
-import BrainPage from './BrainPage';
+import BrainPage, { modelLabel } from './BrainPage';
 
 vi.mock('../../ai/client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../ai/client')>()),
   streamChat: vi.fn(),
 }));
 
-// jsdom has no 2D canvas; the core simply doesn't draw.
+// jsdom has no 2D canvas; the graph simply doesn't draw.
 HTMLCanvasElement.prototype.getContext = vi.fn(() => null) as never;
 
 function Providers({ children }: { children: ReactNode }) {
@@ -47,36 +47,40 @@ async function seed() {
   return project;
 }
 
+const done = (text: string) => ({
+  text,
+  usage: { inputTokens: 1, outputTokens: 1 },
+  stopReason: 'end_turn',
+});
+
 beforeEach(async () => {
   await resetAllData();
   vi.mocked(streamChat).mockReset();
 });
 
 describe('Brain', () => {
-  it('shows the core, telemetry and nodes, with EDGE offline and no AI controls without a key', async () => {
+  it('shows the ask page and the graph, with no AI controls until a key is connected', async () => {
     await seed();
     render(
       <Providers>
         <BrainPage />
       </Providers>,
     );
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('NEURAL CORE');
-    const nodes = screen.getByRole('region', { name: 'Nodes' });
+    expect(screen.getByRole('heading', { level: 1, name: 'Ask your brain' })).toBeInTheDocument();
+    const graph = screen.getByRole('region', { name: 'Graph' });
     expect(
-      await within(nodes).findByRole('button', { name: /DV Interview Prep/ }),
+      await within(graph).findByRole('button', { name: /DV Interview Prep/ }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('img', {
-        name: /1 active projects in orbit: DV Interview Prep, 0 of 1 done/,
-      }),
+      within(graph).getByRole('img', { name: /1 projects, 0 milestones, 1 tasks/ }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/EDGE is offline/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Brief me' })).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Ask EDGE')).toBeDisabled();
+    expect(screen.getByText('Connect an Anthropic API key to ask questions')).toBeInTheDocument();
+    expect(screen.getByLabelText('Ask your brain')).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Brief me on today' })).not.toBeInTheDocument();
     expect(streamChat).not.toHaveBeenCalled();
   });
 
-  it('opens a project focus panel from the nodes list', async () => {
+  it('focuses a project from the graph chips and shows its card', async () => {
     const user = userEvent.setup();
     const project = await seed();
     render(
@@ -84,27 +88,26 @@ describe('Brain', () => {
         <BrainPage />
       </Providers>,
     );
-    await user.click(await screen.findByRole('button', { name: /DV Interview Prep/ }));
-    const panel = screen.getByRole('region', { name: 'DV Interview Prep details' });
-    expect(within(panel).getByRole('link', { name: 'Open project' })).toHaveAttribute(
+    const chips = await screen.findByRole('list', { name: 'Focus a project' });
+    await user.click(await within(chips).findByRole('button', { name: /DV Interview Prep/ }));
+    expect(screen.getByText('1 open task · 0 milestones ahead · 0 cards')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open project' })).toHaveAttribute(
       'href',
       `/projects/${project.id}`,
     );
-    await user.click(within(panel).getByRole('button', { name: 'Close details' }));
-    expect(
-      screen.queryByRole('region', { name: 'DV Interview Prep details' }),
-    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('link', { name: 'Open project' })).not.toBeInTheDocument();
   });
 
-  it('briefs VJ with a streamed reply grounded in the snapshot, and records usage', async () => {
+  it('answers with numbered sources from short refs, records usage, and keeps the thread for follow-ups', async () => {
     const user = userEvent.setup();
     await seed();
     await updateSettings({ aiEnabled: true, aiApiKey: 'sk-ant-test' });
     vi.mocked(streamChat).mockImplementation(async ({ onText }) => {
-      onText?.('Good evening, VJ. ', 'Good evening, VJ. ');
-      onText?.('SVA sequences is on deck.', 'Good evening, VJ. SVA sequences is on deck.');
+      onText?.('Start with **SVA sequences** [[t1]] ', '');
+      onText?.('for DV Interview Prep [[p1]].', '');
       return {
-        text: 'Good evening, VJ. SVA sequences is on deck.',
+        text: 'Start with **SVA sequences** [[t1]] for DV Interview Prep [[p1]].',
         usage: { inputTokens: 900, outputTokens: 12 },
         stopReason: 'end_turn',
       };
@@ -114,39 +117,54 @@ describe('Brain', () => {
         <BrainPage />
       </Providers>,
     );
-    await user.click(await screen.findByRole('button', { name: 'Brief me' }));
-    const log = screen.getByRole('log', { name: 'Conversation with EDGE' });
+    await user.click(await screen.findByRole('button', { name: 'Brief me on today' }));
+
     expect(
-      await within(log).findByText('Good evening, VJ. SVA sequences is on deck.'),
+      await screen.findByRole('heading', { level: 2, name: 'Brief me on today' }),
     ).toBeInTheDocument();
+    const sources = await screen.findByRole('region', { name: 'Sources' });
+    expect(
+      within(sources)
+        .getAllByRole('button')
+        .map((b) => b.textContent),
+    ).toEqual([
+      expect.stringContaining('SVA sequences'),
+      expect.stringContaining('DV Interview Prep'),
+    ]);
+    const answer = screen.getByRole('region', { name: 'Answer' });
+    expect(
+      within(answer).getByRole('button', { name: 'Source 1: SVA sequences' }),
+    ).toHaveTextContent('1');
+    expect(within(answer).getByText('SVA sequences', { selector: 'strong' })).toBeInTheDocument();
+    expect(answer).not.toHaveTextContent('[[');
+    expect(screen.getByRole('region', { name: 'Graph' })).toHaveTextContent(
+      '2 sources from the latest answer',
+    );
 
     const call = vi.mocked(streamChat).mock.calls[0]![0];
     expect(call.apiKey).toBe('sk-ant-test');
-    expect(call.messages).toEqual([{ role: 'user', content: 'Brief me' }]);
-    expect(call.system.persona).toMatch(/You are EDGE/);
+    expect(call.messages).toEqual([{ role: 'user', content: 'Brief me on today' }]);
+    expect(call.system.persona).toMatch(/Cite your sources/);
     const snapshot = JSON.parse(call.system.context!.replace(/^[^\n]*\n/, ''));
-    expect(snapshot.projects[0].name).toBe('DV Interview Prep');
-    expect(snapshot.tasks[0].title).toBe('SVA sequences');
+    expect(snapshot.projects[0]).toMatchObject({ id: 'p1', name: 'DV Interview Prep' });
+    expect(snapshot.tasks[0]).toMatchObject({ id: 't1', projectId: 'p1', title: 'SVA sequences' });
     await waitFor(async () => expect((await getSettings()).aiUsage?.requests).toBe(1));
 
-    // A follow-up reuses the same snapshot and sends the history.
-    vi.mocked(streamChat).mockResolvedValueOnce({
-      text: 'Two.',
-      usage: { inputTokens: 1, outputTokens: 1 },
-      stopReason: 'end_turn',
-    });
-    await user.type(screen.getByLabelText('Ask EDGE'), 'How many?{Enter}');
-    expect(await within(log).findByText('Two.')).toBeInTheDocument();
+    vi.mocked(streamChat).mockResolvedValueOnce(done('About 45 minutes.'));
+    await user.type(screen.getByLabelText('Ask a follow-up'), 'How long will it take?{Enter}');
+    expect(await screen.findByText('About 45 minutes.')).toBeInTheDocument();
     const second = vi.mocked(streamChat).mock.calls[1]![0];
     expect(second.system.context).toBe(call.system.context);
     expect(second.messages.map((m) => m.role)).toEqual(['user', 'assistant', 'user']);
+
+    await user.click(screen.getByRole('button', { name: 'New thread' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Ask your brain' })).toBeInTheDocument();
   });
 
   it('shows a calm error with a retry when the request fails', async () => {
     const user = userEvent.setup();
     await seed();
     await updateSettings({ aiEnabled: true, aiApiKey: 'sk-ant-test' });
-    const { AiError } = await import('../../ai/client');
     vi.mocked(streamChat).mockRejectedValueOnce(
       new AiError('rate_limit', 'Rate limited by Anthropic (429). Give it a minute and try again.'),
     );
@@ -157,15 +175,17 @@ describe('Brain', () => {
     );
     await user.click(await screen.findByRole('button', { name: "What's due this week?" }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Rate limited');
-    vi.mocked(streamChat).mockResolvedValueOnce({
-      text: 'Nothing urgent.',
-      usage: { inputTokens: 1, outputTokens: 1 },
-      stopReason: 'end_turn',
-    });
+    vi.mocked(streamChat).mockResolvedValueOnce(done('Nothing urgent.'));
     await user.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByText('Nothing urgent.')).toBeInTheDocument();
     expect(vi.mocked(streamChat).mock.calls[1]![0].messages).toEqual([
       { role: 'user', content: "What's due this week?" },
     ]);
+  });
+
+  it('labels models in plain words', () => {
+    expect(modelLabel('claude-sonnet-5-5')).toBe('Sonnet 5.5');
+    expect(modelLabel('claude-haiku-5-5')).toBe('Haiku 5.5');
+    expect(modelLabel('my-custom-model')).toBe('my-custom-model');
   });
 });

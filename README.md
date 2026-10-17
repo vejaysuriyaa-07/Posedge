@@ -132,20 +132,21 @@ The format:
 
 ## The Brain and EDGE (AI)
 
-The **Brain** (sidebar, or `G` then `B`) is a live map of your work. You are the core, your projects orbit
-you, and this week's tasks, milestones and review cards circle around them. It works without AI.
+The **Brain** (sidebar, or `G` then `B`) has two parts. The **graph** is a map of your projects, milestones,
+tasks and review cards: drag it, zoom it, hover a node to see what it connects to. It works without AI.
 
-**EDGE** is the AI inside it. It answers questions about your real Posedge data ("Brief me", "What should I
-study today?"), can talk back, and takes voice input. To turn it on:
+**Ask your brain** lets you ask EDGE, the AI behind it, about your real data ("Brief me on today", "What
+should I study today?"). Answers cite the tasks and projects they're based on, and those light up in the
+graph. You can ask by voice and have answers read aloud. To turn it on:
 
 1. Create an API key in the [Anthropic Console](https://console.anthropic.com/) and set a monthly spend limit.
 2. Open **Settings > AI**, paste the key, press **Test key**, then switch on **Enable AI features**.
 
 Your key stays in this browser (IndexedDB) and is sent only to `api.anthropic.com`. It is left out of backups
 unless you tick "Include API key in backup". API usage is billed by Anthropic, separately from a claude.ai
-subscription; Settings shows this month's token count. Nothing is sent until you ask EDGE something. Each
-conversation sends a compact snapshot: projects, milestones, current tasks, recent card prompts and your
-stats. EDGE can't change your data yet; it tells you the quickest way to do it.
+subscription; Settings shows this month's token count. Nothing is sent until you ask. Each thread sends a
+compact snapshot: projects, milestones, current tasks, recent card prompts and your stats. EDGE can't change
+your data yet; it tells you the quickest way to do it.
 
 ## Quick Add tokens
 
@@ -160,7 +161,7 @@ stats. EDGE can't change your data yet; it tells you the quickest way to do it.
 | `Ctrl/⌘ K`           | Command palette                                   |
 | `G` then `T/W/P/R/S` | Go to Today / Week / Projects / Review / Settings |
 | `G` then `B`         | Go to the Brain                                   |
-| `/`                  | Talk to EDGE (Brain)                              |
+| `/`                  | Ask your brain (Brain)                            |
 | `E` / `X`            | Edit / toggle the focused task                    |
 | `Space`              | Reveal the answer (Review)                        |
 | `1` `2` `3` `4`      | Again / Hard / Good / Easy                        |

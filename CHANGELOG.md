@@ -4,25 +4,23 @@ All notable changes to Posedge. Dates are local (America/Los_Angeles).
 
 ## [Unreleased]
 
-### The Brain and EDGE (early Phase 4)
+### The Brain (early Phase 4)
 
-- New **Brain** screen: an always-dark HUD around an animated neural core.
-  - You sit at the center as an arc reactor.
-  - Your projects orbit it, with this week's tasks and upcoming milestones as satellites.
-  - Your review cards show as stars.
-  - Pulses run along the links in proportion to what you finished this week.
-- Side panels show telemetry (streak, today, reviews, focus, level, week load), the project list, upcoming
-  deadlines with countdowns, this week's Big 3 and the AI status.
-- **EDGE**, an AI assistant that answers questions about your real Posedge data:
-  - Replies stream in like a typewriter, in a multi-turn conversation.
-  - Suggestion chips: "Brief me", "What's due this week?", "What should I study today?",
-    "How's my DV prep going?".
-  - Push-to-talk voice input, and optional spoken replies.
-  - The core spins up while EDGE thinks and shows a voice ring while it answers.
+- New **Brain** screen with two parts.
+- **Ask your brain:** ask anything about your projects, tasks and review cards and get an answer from your
+  real data.
+  - Answers stream in and carry numbered citations, with a Sources row that opens the task or focuses the
+    project.
+  - Follow-ups keep the thread. Answers can be copied, listened to or rewritten, and related questions
+    are suggested.
+  - Voice: push-to-talk questions and optional read-aloud answers.
+- **Graph:** an Obsidian-style map of your projects, milestones, tasks and cards.
+  - Drag, zoom and pinch, and hover a node to light up its neighbors.
+  - The items the latest answer cited stay highlighted.
+  - Filters show or hide cards and recently completed work, and project chips focus a project.
 - **Settings > AI**: enable toggle, your Anthropic API key (show/hide, Test key), model choice with a custom
-  model id, this month's token usage, spoken replies, and an opt-in to include the key in backups.
-- Navigation: Brain in the sidebar and More, `G` then `B`, the command palette, and `/` to talk to EDGE.
-- Full screen mode, a phone layout, and a static frame when reduced motion is on.
+  model id, this month's token usage, read-aloud, and an opt-in to include the key in backups.
+- Navigation: Brain in the sidebar and More, `G` then `B`, the command palette, and `/` to ask.
 
 ## [1.0.0] - 2026-10-16
 

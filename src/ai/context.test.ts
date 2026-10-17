@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Project, Task } from '../db/types';
-import { buildSnapshot, estimateTokens, relevantTasks, trimSnapshot } from './context';
+import {
+  buildSnapshot,
+  estimateTokens,
+  relevantTasks,
+  trimSnapshot,
+  withShortRefs,
+} from './context';
 
 const NOW = new Date(2026, 9, 17, 10, 0, 0); // Sat Oct 17 2026, week of Oct 12
 
@@ -143,5 +149,54 @@ describe('context snapshot', () => {
       .map((t) => t.title.slice(0, 7));
     expect(remainingDone).toContain('done 39');
     expect(remainingDone).not.toContain('done 00');
+  });
+
+  it('swaps ids for short refs the model can cite, with a map back to the records', () => {
+    const s = buildSnapshot({
+      now: NOW,
+      timezone: 'UTC',
+      settings: { capacityMinByWeekday: [0, 0, 0, 0, 0, 0, 0], restDays: [] },
+      projects: [{ ...project, id: 'proj-uuid' }],
+      milestones: [
+        {
+          id: 'ms-uuid',
+          projectId: 'proj-uuid',
+          title: 'SVA',
+          weekStart: '2026-10-26',
+          done: false,
+          order: 1,
+        },
+      ],
+      tasks: [
+        task({
+          id: 'task-uuid',
+          projectId: 'proj-uuid',
+          milestoneId: 'ms-uuid',
+          weekStart: '2026-10-12',
+          title: 'Read SVA',
+        }),
+        task({
+          id: 'task-2',
+          projectId: 'proj-uuid',
+          milestoneId: 'deleted',
+          weekStart: '2026-10-12',
+        }),
+      ],
+      cards: [],
+    });
+    const { snapshot, refs } = withShortRefs(s);
+    expect(snapshot.projects[0]!.id).toBe('p1');
+    expect(snapshot.milestones[0]).toMatchObject({ id: 'm1', projectId: 'p1' });
+    expect(snapshot.tasks[0]).toMatchObject({ id: 't1', projectId: 'p1', milestoneId: 'm1' });
+    expect(snapshot.tasks[1]).not.toHaveProperty('milestoneId');
+    expect(JSON.stringify(snapshot)).not.toContain('uuid');
+    expect(refs.t1).toEqual({
+      kind: 'task',
+      id: 'task-uuid',
+      title: 'Read SVA',
+      projectId: 'proj-uuid',
+      projectName: 'DV Interview Prep',
+      emoji: '🎯',
+    });
   });
 });
