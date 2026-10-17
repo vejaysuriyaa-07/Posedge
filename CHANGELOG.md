@@ -4,6 +4,17 @@ All notable changes to Posedge. Dates are local (America/Los_Angeles).
 
 ## [Unreleased]
 
+### Phase 2: Motivation (2026-10-16)
+
+- Progress page: level ring, streak and freeze stats, tasks this week vs last, reviews this week.
+- GitHub-style year heatmap (53 weeks, Monday first, 5 buckets) with tooltips, freeze snowflakes, hatched rest
+  days, keyboard navigation and a per-project filter.
+- Charts: weekly tasks done stacked by project color, estimated hours per project (donut), reviews per day
+  with a retention line, and a cross-project milestone timeline. Wins feed of milestones and Big 3.
+- Weekly Review wizard: Celebrate, Clean up (Keep / Push / Drop with undo / Unplan), Plan (milestones and
+  Big 3 picker), Assign (week board with capacity warnings), Reflect. +30 XP and confetti once per week.
+- Weekly review banner from Sunday 17:00 through Monday; streak freeze, earned-freeze and fresh-start toasts.
+
 ### Phase 1: MVP (2026-10-16)
 
 - Dexie database (v1 schema from the spec) with zod-validated types and transactional write helpers.

@@ -2,21 +2,23 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { CalendarCheck, HardDrive } from 'lucide-react';
 import { Link } from 'react-router';
 import { db } from '../../db/db';
-import { diffDays, dateOfIso, mondayOf, weekdayIndex } from '../../domain/week';
+import { diffDays, dateOfIso } from '../../domain/week';
+import { reviewTargetWeek, weeklyReviewWindow } from '../../domain/progress';
 import { useSettings } from '../../hooks/useSettings';
 import { exportAndDownload } from '../settings/download';
 
-/** Gentle nudges: backup overdue, and "New week. Pick your Big 3." on Mondays. */
+/** Gentle nudges: backup overdue, and "New week. Pick your Big 3." from Sunday 17:00 through Monday. */
 export function TodayBanners({ today }: { today: string }) {
   const settings = useSettings();
-  const weekStart = mondayOf(today);
+  const now = new Date();
+  const weekStart = reviewTargetWeek(now);
   const info = useLiveQuery(async () => {
     const [review, taskCount] = await Promise.all([
       db.weeklyReviews.get(weekStart),
       db.tasks.count(),
     ]);
     return { hasReview: !!review, taskCount };
-  }, [weekStart]);
+  }, [weekStart, today]);
 
   const daysSinceBackup = settings.lastBackupAt
     ? diffDays(today, dateOfIso(settings.lastBackupAt))
@@ -25,15 +27,18 @@ export function TodayBanners({ today }: { today: string }) {
     settings.backupReminderDays > 0 &&
     (info?.taskCount ?? 0) > 0 &&
     (daysSinceBackup === null || daysSinceBackup >= settings.backupReminderDays);
-  const monday = weekdayIndex(today) === 0 && info && !info.hasReview;
+  const reviewDue = weeklyReviewWindow(now) && info && !info.hasReview;
+  const sundayEvening = now.getDay() === 0;
 
-  if (!backupDue && !monday) return null;
+  if (!backupDue && !reviewDue) return null;
   return (
     <div className="grid gap-2">
-      {monday ? (
+      {reviewDue ? (
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-violet-400/30 bg-violet-500/10 px-4 py-3 text-sm">
           <CalendarCheck size={18} className="text-violet-600 dark:text-violet-300" aria-hidden />
-          <span className="flex-1">New week. Pick your Big 3.</span>
+          <span className="flex-1">
+            {sundayEvening ? 'New week tomorrow. Pick your Big 3.' : 'New week. Pick your Big 3.'}
+          </span>
           <Link to="/weekly-review" className="font-medium text-brand hover:underline">
             Start weekly review
           </Link>

@@ -11,6 +11,7 @@ import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { useUi } from './ui';
 import { useStartup } from './useStartup';
+import { WeeklyReviewBanner } from './WeeklyReviewBanner';
 import { WelcomeDialog } from './WelcomeDialog';
 
 const CHORDS = Object.fromEntries(
@@ -68,6 +69,7 @@ export function Layout() {
           tabIndex={-1}
           className="flex-1 px-4 pt-5 pb-28 outline-none md:px-8 md:pb-10"
         >
+          <WeeklyReviewBanner />
           <Outlet />
         </main>
       </div>

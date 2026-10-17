@@ -269,3 +269,36 @@ describe('template and backup', () => {
     expect((await db.tasks.get(task.id))?.title).toBe('Edited locally');
   });
 });
+
+describe('motivation', () => {
+  it('grants weekly review XP once per week', async () => {
+    const { saveWeeklyReview } = await import('./weeklyReview');
+    const input = {
+      weekStart: '2026-10-19',
+      big3TaskIds: [],
+      wins: '',
+      worked: 'a',
+      change: 'b',
+      plannedMin: 0,
+    };
+    expect((await saveWeeklyReview(input, NOW)).xp).toBe(30);
+    expect((await saveWeeklyReview({ ...input, worked: 'edited' }, NOW)).xp).toBe(0);
+    expect((await getSettings()).xpTotal).toBe(30);
+    expect((await db.weeklyReviews.get('2026-10-19'))?.worked).toBe('edited');
+  });
+
+  it('vacation mode shifts due dates by the time away', async () => {
+    const { setVacationMode } = await import('./review');
+    const p = await project();
+    const { cards } = await createCards([{ projectId: p.id, prompt: 'q', answer: 'a' }], NOW);
+    const before = new Date(cards[0]!.due);
+    await setVacationMode(true, NOW);
+    expect((await getSettings()).vacationMode).toBe(true);
+    const back = new Date(2026, 9, 24, 9, 0, 0); // one week later
+    expect(await setVacationMode(false, back)).toBe(7);
+    const after = new Date((await db.reviewCards.get(cards[0]!.id))!.due);
+    expect(after.getDate()).toBe(before.getDate() + 7);
+    expect(after.getHours()).toBe(4);
+    expect((await getSettings()).vacationMode).toBe(false);
+  });
+});

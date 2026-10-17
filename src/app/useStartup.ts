@@ -3,6 +3,7 @@ import { getSettings, updateSettings } from '../db/db';
 import { releaseQueuedCards } from '../db/ops/review';
 import { reconcileStreaks } from '../db/ops/streak';
 import { useSettingsLoaded } from '../hooks/useSettings';
+import { useToast } from './Toasts';
 import { useToday } from '../hooks/useToday';
 import { applyTheme } from './theme';
 
@@ -12,16 +13,30 @@ export function useStartup(): void {
   const settings = useSettingsLoaded();
   const theme = settings?.theme;
 
+  const { toast } = useToast();
   useEffect(() => {
     void (async () => {
       try {
-        await reconcileStreaks();
-        await releaseQueuedCards();
+        const r = await reconcileStreaks();
+        const released = await releaseQueuedCards();
+        const s = await getSettings();
+        if (r.freezesUsed > 0) {
+          toast(
+            `A streak freeze covered ${r.freezesUsed === 1 ? 'a missed day' : `${r.freezesUsed} missed days`}. Streak safe.`,
+          );
+        } else if (r.brokeOn && s.longestStreak > 0) {
+          toast(
+            `Fresh start. Your longest is ${s.longestStreak} day${s.longestStreak === 1 ? '' : 's'}.`,
+          );
+        }
+        if (r.freezesEarned > 0) toast(`You earned a streak freeze (${s.freezes}/3).`);
+        if (released > 0)
+          toast(`${released} queued card${released === 1 ? '' : 's'} unlocked for review.`);
       } catch (e) {
         console.error('Daily bookkeeping failed', e);
       }
     })();
-  }, [today]);
+  }, [today, toast]);
 
   useEffect(() => {
     if (theme) applyTheme(theme);

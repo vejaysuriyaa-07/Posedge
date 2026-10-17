@@ -81,3 +81,23 @@ Ambiguities resolved while building Posedge, and any deviations from [`SPEC.md`]
     `reviewedAt`, `createdAt`, ...). Replace wipes first and requires a confirm step.
 26. **Project deletion** exists (type DELETE to confirm) in addition to archive, and removes the project's tasks,
     milestones and cards; XP and logs stay.
+
+## Phase 2
+
+27. **Weekly review target week.** From Sunday 17:00 the review plans next week; otherwise the current week
+    (`domain/progress.ts#reviewTargetWeek`). "Last week" in Celebrate is the week before the target. Clean up
+    lists every unfinished task planned in an earlier week (not only last week) so nothing slips. Saving twice
+    updates the review but grants the +30 XP once.
+28. **Weekly review banner** shows Sunday 17:00 through Monday on every screen except Today (which has its own
+    "New week. Pick your Big 3." banner) and the review page itself.
+29. **Heatmap buckets** are quartiles of the non-zero values in view (forced strictly increasing), so the five
+    intensities stay meaningful for both XP and the per-project task-count filter. The grid uses roving
+    focus: one cell is tabbable and arrow keys move between days; each cell has an aria-label.
+30. **"Estimated hours per project"** covers tasks planned in the last 4 weeks including this one, which reflects
+    where planned time goes without being dominated by old history.
+31. **Milestone timeline** is a recharts scatter (x = week, y = project, filled = done). Recharts animations are
+    disabled under `prefers-reduced-motion`.
+32. **Streak events** surface as gentle toasts at the start of a day: a freeze covered a missed day, a freeze was
+    earned, or "Fresh start. Your longest is N days." Queued cards unlocking is announced the same way.
+33. **Week board extraction.** The planning board is a shared component (`features/week/WeekBoard.tsx`) used by
+    the Week page and the review's Assign step (live capacity warnings in both).
