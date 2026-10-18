@@ -13,6 +13,7 @@ const ImportPage = lazy(() => import('../features/import/ImportPage'));
 const SettingsPage = lazy(() => import('../features/settings/SettingsPage'));
 const MorePage = lazy(() => import('./MorePage'));
 const BrainPage = lazy(() => import('../features/brain/BrainPage'));
+const ShutdownPage = lazy(() => import('../features/shutdown/ShutdownPage'));
 
 function PageFallback() {
   return <div className="p-6 text-muted" aria-busy="true" />;
@@ -31,6 +32,7 @@ export function AppRoutes() {
           <Route path="progress" element={<ProgressPage />} />
           <Route path="brain" element={<BrainPage />} />
           <Route path="weekly-review" element={<WeeklyReviewPage />} />
+          <Route path="shutdown" element={<ShutdownPage />} />
           <Route path="import" element={<ImportPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="more" element={<MorePage />} />

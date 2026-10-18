@@ -36,6 +36,7 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useSettings } from '../../hooks/useSettings';
 import { useStreak } from '../../hooks/useStreak';
 import { useToday } from '../../hooks/useToday';
+import { MomentumCard } from './MomentumCard';
 
 const tooltipStyle = {
   contentStyle: {
@@ -283,6 +284,8 @@ export default function ProgressPage() {
         />
         <Stat label="Reviews this week" value={stats?.reviewsThisWeek ?? 0} />
       </div>
+
+      <MomentumCard projects={active} />
 
       <Card title="Your year">
         <div className="mb-3 flex justify-end">

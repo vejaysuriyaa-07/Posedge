@@ -266,6 +266,61 @@ Ambiguities resolved while building Posedge, and any deviations from [`SPEC.md`]
 60. **Commit authorship.** At VJ's request, commits are authored as VJ and carry no AI co-author or
     session lines.
 
+## Ideas from similar projects
+
+61. **Research first.** A survey of similar open-source apps chose what came next: Super Productivity,
+    dayGLANCE, Loop Habit Tracker, Habitica, Anki/FSRS, Logseq, Vikunja, Leantime and others, plus UX
+    patterns from Sunsama, Amazing Marvin, Llama Life and Linear. Three ideas fit a one-person,
+    local-first app and could be built without a server: Flow, the daily shutdown and Momentum.
+62. **Flow mode** (Llama Life, Marvin's "Beat the Clock", Super Productivity's focus mode). A
+    full-screen run of today's list. Each task counts down from its estimate (25 minutes without one)
+    with "+5 min", Done, Later (to the back, keeping its time), Skip and End.
+    - "Done around 4:35 pm" sums what's left. Past the estimate the ring turns amber and the copy
+      stays calm.
+    - Pure transitions live in `domain/flow.ts`; the state sits in localStorage, so a reload resumes,
+      even minimized to a corner pill.
+    - Each task logs one focus session with its total time (capped at 4 hours), which feeds the
+      heatmap and XP.
+    - Learning tasks finished in Flow skip the "Lock it in" sheet and wait under Review > Needs cards,
+      so nothing pops over the run.
+    - Flow and the focus timer never run together: opening one while the other runs brings that one
+      back, so time isn't counted twice.
+    - Ambient sound (brown noise, rain, waves) and the time's-up chime are generated with Web Audio,
+      so there are no audio files, and they only start from a user gesture. A screen wake lock holds
+      while it runs full screen.
+    - The overlay makes the app behind it inert; Escape minimizes; after any action focus returns to
+      pause/resume, so Space always means pause.
+    - Confetti stays reserved for the spec's five events, so finishing a task in Flow gets a soft
+      ripple instead.
+63. **Daily shutdown** (Sunsama's shutdown ritual). `/shutdown` shows:
+    - the day's tally (tasks, focus, XP, cards), with numbers counting up;
+    - what got done;
+    - each open task with Tomorrow / Backlog / Keep (nothing moves until "Shut down", and the move can
+      be undone);
+    - a 1–5 energy rating and a one-line note.
+
+    Details:
+    - "Tomorrow" is the next non-rest day, and Backlog is that day's week.
+    - A shutdown before 4am closes the previous day.
+    - A new `dayLogs` table (Dexie v2) stores the day, with `SCHEMA_VERSION` 2. Older backups still
+      load, with no day logs.
+    - From 5pm Today offers "Ready to wrap up?" until the day is closed.
+
+64. **Momentum** (Loop Habit Tracker's habit strength, `score = score·m + value·(1−m)` with
+    `m = 0.5^(√freq/13)`).
+    - Overall momentum aims for every day. Projects aim for three days a week, where `value` is the
+      share of the target met in the trailing 7 days, as Loop does for weekly habits.
+    - Rest days, freezes and vacation don't count, so a quiet day dips the score instead of resetting
+      it, in keeping with the no-guilt tone.
+    - Project cards show a 30-day sparkline, the score and the weekly change. Each sparkline fits its
+      own range, at least 25 points tall; the number carries the absolute score.
+    - Progress gets a 90-day chart with a hover tooltip and a ranked list by project.
+65. **More layout fixes.**
+    - Long milestone names on project cards now end with an ellipsis instead of being clipped.
+    - Every new list grid uses `grid-cols-1` (the planner and the shutdown rows overflowed on phones
+      without it).
+    - A clipped-text audit of every page at 390, 768 and 1440px comes back clean.
+
 ## Feature checklist (SPEC.md, re-read at the end of Phase 3)
 
 Legend: [x] done, [~] done with a noted deviation, [ ] deferred.

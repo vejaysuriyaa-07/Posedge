@@ -100,3 +100,34 @@ test('deep link survives a hard refresh', async ({ page }) => {
   await page.reload();
   await expect(page.getByRole('heading', { name: 'This week' })).toBeVisible();
 });
+
+test('flow runs today and the day shuts down', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: "Start with VJ's template" }).click();
+  await expect(page.getByRole('dialog', { name: 'Welcome to Posedge' })).toBeHidden();
+
+  // Flow: plan, run one task to done, end, and land on the summary.
+  await page.keyboard.press('f');
+  const planner = page.getByRole('dialog', { name: 'Plan a flow' });
+  await expect(
+    planner.getByRole('list', { name: 'Flow order' }).getByRole('listitem').first(),
+  ).toBeVisible();
+  await planner.getByRole('button', { name: 'Start flow' }).click();
+  const run = page.getByRole('dialog', { name: 'Flow' });
+  const title = run.getByRole('heading', { level: 1 });
+  await expect(title).not.toBeEmpty();
+  const first = await title.innerText();
+  await run.getByRole('button', { name: 'Done' }).click();
+  await expect(title).not.toHaveText(first);
+  await run.getByRole('button', { name: 'End flow' }).click();
+  const summary = page.getByRole('dialog', { name: 'Flow summary' });
+  await expect(summary.getByText('Tasks done')).toBeVisible();
+
+  // Daily shutdown from the summary.
+  await summary.getByRole('button', { name: /Wrap up the day|Daily shutdown/ }).click();
+  const heading = page.getByRole('heading', { level: 1 });
+  await expect(heading).toHaveText(/^Wrapping up /);
+  await expect(page.getByRole('main').getByText(first).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Shut down' }).click();
+  await expect(heading).toHaveText(/, wrapped$/);
+});

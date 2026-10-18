@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { db, getSettings, TABLE_NAMES, updateSettings } from './db';
 import {
   ActivityDaySchema,
+  DayLogSchema,
   DEFAULT_SETTINGS,
   FocusSessionSchema,
   ImportBatchSchema,
@@ -33,6 +34,8 @@ export const BackupSchema = z.object({
     weeklyReviews: z.array(WeeklyReviewSchema),
     importBatches: z.array(ImportBatchSchema),
     settings: z.array(ImportedSettingsSchema),
+    /** Added in schema 2; older backups don't have it. */
+    dayLogs: z.array(DayLogSchema).default([]),
   }),
 });
 export type Backup = z.infer<typeof BackupSchema>;
@@ -116,6 +119,7 @@ const KEYS: Record<(typeof TABLE_NAMES)[number], string> = {
   weeklyReviews: 'weekStart',
   importBatches: 'id',
   settings: 'id',
+  dayLogs: 'date',
 };
 
 /** Best-effort "last modified" for merge conflicts (newer wins). */
@@ -125,6 +129,7 @@ function stamp(row: Row): string {
     'doneAt',
     'reviewedAt',
     'lastBackupAt',
+    'shutdownAt',
     'createdAt',
     'startedAt',
   ]) {

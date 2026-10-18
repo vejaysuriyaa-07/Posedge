@@ -10,36 +10,9 @@ import { useProjects } from '../hooks/useData';
 import { useSettings } from '../hooks/useSettings';
 import { celebrate } from './celebrate';
 import { useToast } from './Toasts';
+import { loadFocusState as load, saveFocusState as save, type FocusState } from './focusState';
+import { openFlow, useFlowStore } from '../features/flow/flowStore';
 import { useUi } from './ui';
-
-const KEY = 'posedge-focus';
-
-interface FocusState {
-  startedAt: number;
-  durationMin: 25 | 50;
-  projectId: string;
-  taskId?: string;
-  pausedAt?: number;
-  pausedMs: number;
-}
-
-function load(): FocusState | null {
-  try {
-    const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as FocusState) : null;
-  } catch {
-    return null;
-  }
-}
-
-function save(s: FocusState | null) {
-  try {
-    if (s) localStorage.setItem(KEY, JSON.stringify(s));
-    else localStorage.removeItem(KEY);
-  } catch {
-    // Timer still works for this session.
-  }
-}
 
 function elapsedMs(s: FocusState, now: number): number {
   return (s.pausedAt ?? now) - s.startedAt - s.pausedMs;
@@ -58,6 +31,15 @@ export function FocusTimer() {
   const { byId } = useProjects();
   const [state, setState] = useState<FocusState | null>(load);
   const [now, setNow] = useState(() => Date.now());
+  const { flow } = useFlowStore();
+
+  // Flow already tracks time; opening the focus timer during one brings the flow back instead.
+  useEffect(() => {
+    if (ui.focusOpen && flow) {
+      ui.setFocusOpen(false);
+      openFlow();
+    }
+  }, [ui, flow]);
 
   const running = !!state && !state.pausedAt;
 
@@ -109,7 +91,7 @@ export function FocusTimer() {
 
   return (
     <>
-      {ui.focusOpen && !state ? (
+      {ui.focusOpen && !state && !flow ? (
         <FocusSetup
           defaultMin={settings.focusDefaultMin}
           taskId={ui.focusTaskId}

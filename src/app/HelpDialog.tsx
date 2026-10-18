@@ -5,6 +5,7 @@ import { useUi } from './ui';
 
 export const SHORTCUTS: { keys: string[]; label: string }[] = [
   { keys: ['N'], label: 'Quick add a task' },
+  { keys: ['F'], label: "Start or resume flow (run today's list)" },
   { keys: ['Ctrl/⌘', 'K'], label: 'Command palette' },
   { keys: ['G', 'T'], label: 'Go to Today' },
   { keys: ['G', 'W'], label: 'Go to Week' },

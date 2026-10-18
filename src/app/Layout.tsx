@@ -9,6 +9,8 @@ import { PRIMARY_NAV, SECONDARY_NAV } from './navItems';
 import { PwaStatus } from './PwaStatus';
 import { CommandPalette } from './CommandPalette';
 import { HelpDialog } from './HelpDialog';
+import { FlowHost } from '../features/flow/FlowHost';
+import { openFlow } from '../features/flow/flowStore';
 import { FocusTimer } from './FocusTimer';
 import { QuickAddDialog } from './QuickAdd';
 import { Sidebar } from './Sidebar';
@@ -47,6 +49,10 @@ function GlobalHotkeys() {
     n: (e) => {
       e.preventDefault();
       ui.openQuickAdd();
+    },
+    f: (e) => {
+      e.preventDefault();
+      openFlow();
     },
   });
   return null;
@@ -90,6 +96,7 @@ export function Layout() {
       <CommandPalette />
       <HelpDialog />
       <FocusTimer />
+      <FlowHost />
     </div>
   );
 }

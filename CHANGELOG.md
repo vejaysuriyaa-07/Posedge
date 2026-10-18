@@ -4,6 +4,23 @@ All notable changes to Posedge. Dates are local (America/Los_Angeles).
 
 ## [Unreleased]
 
+### Flow, daily shutdown and momentum
+
+- **Flow mode** (`F`, or "Start flow" on Today): run today's list one task at a time.
+  - Each task counts down from its estimate. A "done around" time shows when the list will be finished.
+  - **+5 min**, **Done**, **Later**, **Skip** and **End flow**, with keyboard shortcuts.
+  - Minimize it to a corner pill and carry on. A reload resumes where you were.
+  - Optional brown noise, rain or waves, and a soft chime when time is up.
+  - Time spent is logged as focus on each task. A summary at the end compares it with your estimates.
+- **Daily shutdown** (`/shutdown`, the evening banner on Today, or the command palette): a short
+  ritual to close the day.
+  - The day's tally, and what got done.
+  - Send unfinished tasks to tomorrow or the backlog, with undo.
+  - Note how the day felt.
+- **Momentum**: a forgiving score that rises with active days and only dips on quiet ones.
+  - Project cards show a 30-day sparkline.
+  - Progress has a 90-day chart and a ranking by project.
+
 ### The Brain (early Phase 4)
 
 - New **Brain** screen with two parts.
@@ -39,6 +56,7 @@ All notable changes to Posedge. Dates are local (America/Los_Angeles).
 
 ### Fixes
 
+- Long milestone names on project cards end with an ellipsis instead of being cut off.
 - New pages open at the top instead of keeping the last page's scroll; back and forward return to where you
   were.
 - Settings > AI no longer shows an empty key field when Settings is opened directly.

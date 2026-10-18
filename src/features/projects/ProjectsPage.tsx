@@ -6,11 +6,14 @@ import { useUi } from '../../app/ui';
 import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { ProgressRing } from '../../components/ProgressRing';
+import { Sparkline } from '../../components/Sparkline';
 import { db } from '../../db/db';
 import { setProjectArchived } from '../../db/ops/projects';
 import type { Milestone, Project, ReviewCard, Task } from '../../db/types';
+import { formatDelta } from '../../domain/momentum';
 import { endOfDay, mondayOf, weekLabel } from '../../domain/week';
 import { useProjects } from '../../hooks/useData';
+import { useMomentum, type Momentum } from '../../hooks/useMomentum';
 import { useToday } from '../../hooks/useToday';
 import { KIND_LABELS } from './ProjectForm';
 
@@ -60,6 +63,7 @@ export function useProjectStats(): Map<string, ProjectStats> | undefined {
 export default function ProjectsPage() {
   const { projects, loaded } = useProjects();
   const stats = useProjectStats();
+  const momentum = useMomentum();
   const ui = useUi();
   const [showArchived, setShowArchived] = useState(false);
   const active = projects.filter((p) => !p.archived);
@@ -85,7 +89,12 @@ export default function ProjectsPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {active.map((p) => (
-            <ProjectCard key={p.id} project={p} stats={stats?.get(p.id)} />
+            <ProjectCard
+              key={p.id}
+              project={p}
+              stats={stats?.get(p.id)}
+              momentum={momentum?.byProject.get(p.id)}
+            />
           ))}
         </div>
       )}
@@ -124,7 +133,15 @@ export default function ProjectsPage() {
   );
 }
 
-function ProjectCard({ project, stats }: { project: Project; stats?: ProjectStats }) {
+function ProjectCard({
+  project,
+  stats,
+  momentum,
+}: {
+  project: Project;
+  stats?: ProjectStats;
+  momentum?: Momentum;
+}) {
   const today = useToday();
   const pct = stats && stats.total ? stats.done / stats.total : 0;
   return (
@@ -155,9 +172,9 @@ function ProjectCard({ project, stats }: { project: Project; stats?: ProjectStat
           <span className="tabular text-[11px] font-semibold">{Math.round(pct * 100)}%</span>
         </ProgressRing>
       </div>
-      <div className="grid gap-1.5 text-[13px]">
-        <p className="flex items-center gap-2 text-muted">
-          <Flag size={14} aria-hidden />
+      <div className="grid grid-cols-1 gap-1.5 text-[13px]">
+        <p className="flex min-w-0 items-center gap-2 text-muted">
+          <Flag size={14} className="shrink-0" aria-hidden />
           {stats?.nextMilestone ? (
             <span className="truncate">
               <span className="text-fg">{stats.nextMilestone.title}</span> ·{' '}
@@ -175,6 +192,25 @@ function ProjectCard({ project, stats }: { project: Project; stats?: ProjectStat
             <Brain size={14} aria-hidden />
             <span className="tabular text-fg">{stats?.dueCards ?? 0}</span> cards due
           </span>
+        </div>
+      </div>
+      <div className="mt-auto flex items-end gap-3 border-t border-border/70 pt-3">
+        <div className="min-w-0 flex-1">
+          <p className="mb-1 text-[11px] text-muted">Momentum · 30 days</p>
+          <Sparkline
+            series={momentum?.series ?? []}
+            label={
+              momentum
+                ? `${project.name} momentum ${momentum.score}%, ${formatDelta(momentum.delta)} points this week`
+                : `${project.name}: no activity yet`
+            }
+          />
+        </div>
+        <div className="shrink-0 text-right leading-tight">
+          <div className="tabular text-[15px] font-semibold">{momentum?.score ?? 0}%</div>
+          <div className="tabular text-[11px] text-muted">
+            {momentum ? `${formatDelta(momentum.delta)} this week` : 'not started'}
+          </div>
         </div>
       </div>
     </Link>

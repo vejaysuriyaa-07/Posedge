@@ -2,6 +2,7 @@ import Dexie, { type EntityTable } from 'dexie';
 import {
   DEFAULT_SETTINGS,
   type ActivityDay,
+  type DayLog,
   type FocusSession,
   type ImportBatch,
   type Milestone,
@@ -24,6 +25,7 @@ export class PosedgeDB extends Dexie {
   weeklyReviews!: EntityTable<WeeklyReview, 'weekStart'>;
   importBatches!: EntityTable<ImportBatch, 'id'>;
   settings!: EntityTable<Settings, 'id'>;
+  dayLogs!: EntityTable<DayLog, 'date'>;
 
   constructor(name = 'posedge') {
     super(name);
@@ -41,6 +43,8 @@ export class PosedgeDB extends Dexie {
       importBatches: 'id, createdAt',
       settings: 'id',
     });
+    // v2: the daily shutdown's day log.
+    this.version(2).stores({ dayLogs: 'date' });
   }
 }
 
@@ -58,6 +62,7 @@ export const TABLE_NAMES = [
   'weeklyReviews',
   'importBatches',
   'settings',
+  'dayLogs',
 ] as const;
 export type TableName = (typeof TABLE_NAMES)[number];
 

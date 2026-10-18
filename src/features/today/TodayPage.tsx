@@ -1,6 +1,6 @@
 import { DndContext } from '@dnd-kit/core';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Brain, ChevronDown, Flame, PartyPopper, Star } from 'lucide-react';
+import { Brain, ChevronDown, Flame, PartyPopper, Star, Waves } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { QuickAddInput } from '../../app/QuickAdd';
@@ -23,6 +23,7 @@ import { useReviewQueue } from '../../hooks/useReviewQueue';
 import { useSettings } from '../../hooks/useSettings';
 import { useStreak } from '../../hooks/useStreak';
 import { useToday } from '../../hooks/useToday';
+import { openFlow, useFlowStore } from '../flow/flowStore';
 import { TodayBanners } from './TodayBanners';
 
 function greeting(now: Date): string {
@@ -68,6 +69,7 @@ export default function TodayPage() {
   const open = useMemo(() => (data?.planned ?? []).filter((t) => t.status !== 'done'), [data]);
   const info = levelInfo(settings.xpTotal);
   const now = new Date();
+  const { flow } = useFlowStore();
 
   return (
     <section className="mx-auto grid max-w-5xl grid-cols-1 gap-6">
@@ -99,6 +101,16 @@ export default function TodayPage() {
             <span className="text-muted">
               Lv {info.level} · {info.title}
             </span>
+          ) : null}
+          {open.length || flow ? (
+            <Button
+              variant="primary"
+              onClick={openFlow}
+              aria-keyshortcuts="f"
+              className="ml-auto sm:ml-2"
+            >
+              <Waves size={16} /> {flow ? 'Resume flow' : 'Start flow'}
+            </Button>
           ) : null}
         </div>
       </header>

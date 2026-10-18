@@ -17,6 +17,7 @@ import {
   Settings,
   Sun,
   Timer,
+  Waves,
   type LucideIcon,
 } from 'lucide-react';
 import { useMemo, useState, type KeyboardEvent } from 'react';
@@ -28,6 +29,7 @@ import { normalizeName } from '../domain/fuzzy';
 import { exportAndDownload } from '../features/settings/download';
 import { useProjects } from '../hooks/useData';
 import { useHotkeys } from '../hooks/useHotkeys';
+import { getFlow, openFlow, useFlowStore } from '../features/flow/flowStore';
 import { useIsDark } from '../hooks/useIsDark';
 import { useToast } from './Toasts';
 import { useUi } from './ui';
@@ -56,9 +58,13 @@ function matches(cmd: Command, q: string): boolean {
 /** Ctrl/Cmd+K: jump anywhere, run common actions, search tasks. */
 export function CommandPalette() {
   const ui = useUi();
+  const { flow, planning } = useFlowStore();
+  // Full-screen Flow sits above dialogs, so the palette would open out of sight.
+  const flowCovering = planning || (!!flow && !flow.minimized);
   useHotkeys(
     {
       'mod+k': (e) => {
+        if (flowCovering) return;
         e.preventDefault();
         ui.setPaletteOpen(!ui.paletteOpen);
       },
@@ -118,6 +124,23 @@ function PaletteInner({ onClose }: { onClose: () => void }) {
         icon: Brain,
         keywords: 'cards spaced repetition',
         run: go('/review'),
+      },
+      {
+        id: 'flow',
+        group: 'Actions',
+        label: getFlow() ? 'Resume flow' : "Start flow: run today's list",
+        hint: 'F',
+        icon: Waves,
+        keywords: 'focus timer countdown deep work',
+        run: openFlow,
+      },
+      {
+        id: 'shutdown',
+        group: 'Actions',
+        label: 'Daily shutdown',
+        icon: Moon,
+        keywords: 'wrap up end of day close carry over reflect',
+        run: go('/shutdown'),
       },
       {
         id: 'focus',

@@ -206,6 +206,16 @@ export const ImportBatchSchema = z.object({
 });
 export type ImportBatch = z.infer<typeof ImportBatchSchema>;
 
+/** One row per day closed with the daily shutdown. */
+export const DayLogSchema = z.object({
+  date: DateStrSchema,
+  shutdownAt: TimestampSchema,
+  /** 1 (drained) to 5 (energized). */
+  energy: z.number().int().min(1).max(5).optional(),
+  note: z.string().max(500).optional(),
+});
+export type DayLog = z.infer<typeof DayLogSchema>;
+
 export const ThemeSchema = z.enum(['dark', 'light', 'system']);
 export type Theme = z.infer<typeof ThemeSchema>;
 
@@ -287,7 +297,7 @@ export const SettingsSchema = z.object({
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export const DEFAULT_SETTINGS: Settings = {
   id: 'settings',

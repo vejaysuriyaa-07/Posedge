@@ -45,11 +45,12 @@ export function useTaskActions() {
   );
 
   const complete = useCallback(
-    async (id: string) => {
+    /** `lockItIn: false` skips the card sheet; the task then waits under Review > Needs cards. */
+    async (id: string, opts: { lockItIn?: boolean } = {}) => {
       const r = await completeTask(id);
       if (!r) return null;
       feedback(r);
-      if (r.task.kind === 'learn') ui.openLockItIn(r.task.id);
+      if (r.task.kind === 'learn' && opts.lockItIn !== false) ui.openLockItIn(r.task.id);
       return r;
     },
     [feedback, ui],

@@ -179,6 +179,22 @@ To connect it:
 Posedge checks when it opens and about once an hour. The token stays in this browser, goes only to
 `api.github.com`, and is never included in backups.
 
+## Flow, shutdown and momentum
+
+- **Flow** (`F`, or **Start flow** on Today) runs today's list one task at a time.
+  - Each task counts down from its estimate, with **+5 min**, **Done**, **Later**, **Skip** and
+    **End flow**, plus a "done around" time.
+  - `Space` pauses, `D` marks done, `L` sends a task to later, `+` adds 5 minutes and `Esc` minimizes
+    it to a corner pill.
+  - Optional generated brown noise, rain or waves, and a chime when time is up.
+  - Time spent is logged as focus.
+- **Daily shutdown** (`/shutdown`; Today offers it after 5pm) tallies the day.
+  - Send what's left to tomorrow or the backlog, with undo.
+  - Rate your energy and leave a one-line note.
+- **Momentum** follows Loop Habit Tracker's habit strength.
+  - Active days lift it and quiet days only dip it. Rest days and freezes don't count.
+  - Projects aim for three days a week. See it on project cards and on Progress.
+
 ## Quick Add tokens
 
 `~90m` `~2h` `~1.5h` estimate · `!1` `!2` `!3` priority · `#learn` learning task · `#big3` Big 3 ·
@@ -189,6 +205,7 @@ Posedge checks when it opens and about once an hour. The token stays in this bro
 | Keys                 | Action                                            |
 | -------------------- | ------------------------------------------------- |
 | `N`                  | Quick add                                         |
+| `F`                  | Start or resume Flow                              |
 | `Ctrl/⌘ K`           | Command palette                                   |
 | `G` then `T/W/P/R/S` | Go to Today / Week / Projects / Review / Settings |
 | `G` then `B`         | Go to the Brain                                   |

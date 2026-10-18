@@ -1,8 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { CalendarCheck, HardDrive, Inbox } from 'lucide-react';
+import { CalendarCheck, HardDrive, Inbox, Moon } from 'lucide-react';
 import { Link } from 'react-router';
 import { db } from '../../db/db';
 import { countPackTasks } from '../../domain/inbox';
+import { SHUTDOWN_HOUR } from '../../domain/shutdown';
 import { diffDays, dateOfIso } from '../../domain/week';
 import { reviewTargetWeek, weeklyReviewWindow } from '../../domain/progress';
 import { useSettings } from '../../hooks/useSettings';
@@ -17,11 +18,13 @@ export function TodayBanners({ today }: { today: string }) {
   const now = new Date();
   const weekStart = reviewTargetWeek(now);
   const info = useLiveQuery(async () => {
-    const [review, taskCount] = await Promise.all([
+    const [review, taskCount, dayLog, plannedToday] = await Promise.all([
       db.weeklyReviews.get(weekStart),
       db.tasks.count(),
+      db.dayLogs.get(today),
+      db.tasks.where('day').equals(today).count(),
     ]);
-    return { hasReview: !!review, taskCount };
+    return { hasReview: !!review, taskCount, closed: !!dayLog, plannedToday };
   }, [weekStart, today]);
 
   const daysSinceBackup = settings.lastBackupAt
@@ -36,10 +39,22 @@ export function TodayBanners({ today }: { today: string }) {
 
   const packs = settings.inboxPending;
   const suggestions = packs.reduce((n, p) => n + countPackTasks(p.text), 0);
+  const wrapUp = !!info && !info.closed && info.plannedToday > 0 && now.getHours() >= SHUTDOWN_HOUR;
 
-  if (!backupDue && !reviewDue && !packs.length) return null;
+  if (!backupDue && !reviewDue && !packs.length && !wrapUp) return null;
   return (
     <div className="grid gap-2">
+      {wrapUp ? (
+        <div className="pe-sunset flex flex-wrap items-center gap-3 rounded-xl border border-border px-4 py-3 text-sm">
+          <Moon size={18} className="text-orange-600 dark:text-orange-300" aria-hidden />
+          <span className="flex-1">
+            Ready to wrap up? A minute to close the day and carry things forward.
+          </span>
+          <Link to="/shutdown" className="font-medium text-brand hover:underline">
+            Daily shutdown
+          </Link>
+        </div>
+      ) : null}
       {packs.length ? (
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-violet-400/30 bg-violet-500/10 px-4 py-3 text-sm">
           <Inbox size={18} className="text-violet-600 dark:text-violet-300" aria-hidden />
