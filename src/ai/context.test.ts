@@ -110,6 +110,28 @@ describe('context snapshot', () => {
     expect(s.trimmed).toBeUndefined();
   });
 
+  it('carries the brain notes (capped) and leaves them out when empty', () => {
+    const base = {
+      now: NOW,
+      timezone: 'America/Los_Angeles',
+      settings: { capacityMinByWeekday: [60, 60, 60, 60, 60, 60, 60], restDays: [] },
+      projects: [project],
+      milestones: [],
+      tasks: [],
+      cards: [],
+    };
+    const s = buildSnapshot({
+      ...base,
+      brain: { about: '  MS ECE at USC.  ', agenda: `Mon: office hours\n${'x'.repeat(6000)}` },
+    });
+    expect(s.about).toBe('MS ECE at USC.');
+    expect(s.agenda?.startsWith('Mon: office hours')).toBe(true);
+    expect(s.agenda!.length).toBeLessThan(5100);
+    const empty = buildSnapshot({ ...base, brain: { about: ' ', agenda: undefined } });
+    expect(empty).not.toHaveProperty('about');
+    expect(empty).not.toHaveProperty('agenda');
+  });
+
   it('trims the oldest completed tasks first to fit the cap', () => {
     const tasks = [
       ...Array.from({ length: 40 }, (_, i) =>

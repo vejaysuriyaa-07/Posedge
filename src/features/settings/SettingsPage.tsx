@@ -11,9 +11,10 @@ import { setVacationMode } from '../../db/ops/review';
 import { loadTemplate, removeSampleData } from '../../db/seed';
 import type { Settings, Theme } from '../../db/types';
 import { WEEKDAY_SHORT } from '../../domain/week';
-import { useSettings } from '../../hooks/useSettings';
+import { useSettings, useSettingsLoaded } from '../../hooks/useSettings';
 import { exportAndDownload } from './download';
 import { AiSettings } from './AiSettings';
+import { InboxSettings } from './InboxSettings';
 
 export const REPO_URL = 'https://github.com/vejaysuriyaa-07/Posedge';
 
@@ -45,6 +46,7 @@ const THEMES: { key: Theme; label: string; icon: typeof Sun }[] = [
 
 export default function SettingsPage() {
   const s = useSettings();
+  const loaded = useSettingsLoaded();
   const save = (patch: Partial<Omit<Settings, 'id'>>) => void updateSettings(patch);
   return (
     <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5">
@@ -198,7 +200,13 @@ export default function SettingsPage() {
         </label>
       </Section>
 
-      <AiSettings s={s} />
+      {/* These seed form drafts from settings, so wait for the real values. */}
+      {loaded ? (
+        <>
+          <AiSettings s={loaded} />
+          <InboxSettings s={loaded} />
+        </>
+      ) : null}
 
       <DataSection lastBackupAt={s.lastBackupAt} />
       <StorageSection />

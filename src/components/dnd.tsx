@@ -44,6 +44,9 @@ function findContainer(id: UniqueIdentifier, map: Containers): string | undefine
   return Object.keys(map).find((k) => map[k]!.includes(key));
 }
 
+/** Items within this many px of the nearest column edge count as the same column. */
+const COLUMN_TOLERANCE = 24;
+
 const ARROWS: string[] = [
   KeyboardCode.Down,
   KeyboardCode.Right,
@@ -77,11 +80,24 @@ export const boardKeyboardCoordinates: KeyboardCoordinateGetter = (
       (event.code === KeyboardCode.Right && collisionRect.left + collisionRect.width <= rect.left);
     if (ok) candidates.push(entry);
   }
+  // Left/Right go to the nearest column first, then the closest spot in it. Corner distance alone
+  // let small cards elsewhere beat a tall neighbouring column (Sunday → Backlog instead of Saturday).
+  let pool = candidates;
+  if (event.code === KeyboardCode.Left || event.code === KeyboardCode.Right) {
+    const gap = (c: DroppableContainer) => {
+      const r = droppableRects.get(c.id)!;
+      return event.code === KeyboardCode.Left
+        ? collisionRect.left - (r.left + r.width)
+        : r.left - (collisionRect.left + collisionRect.width);
+    };
+    const nearest = Math.min(...candidates.map(gap));
+    pool = candidates.filter((c) => gap(c) <= nearest + COLUMN_TOLERANCE);
+  }
   const collisions = closestCorners({
     active,
     collisionRect,
     droppableRects,
-    droppableContainers: candidates,
+    droppableContainers: pool,
     pointerCoordinates: null,
   });
   let closestId = getFirstCollision(collisions, 'id');

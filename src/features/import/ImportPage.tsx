@@ -7,15 +7,21 @@ import { EmptyState } from '../../components/EmptyState';
 import { Textarea } from '../../components/Field';
 import { db } from '../../db/db';
 import { commitImport, selectAll, selKey, undoImport } from '../../db/ops/import';
+import { resolvePack, restorePack } from '../../db/ops/inbox';
+import type { InboxPack } from '../../db/types';
+import { splitInboxPack } from '../../domain/inbox';
 import type { ParsedPlan } from '../../domain/planParser';
 import { parsePlan, PLAN_EXAMPLE, PLAN_PROMPT } from '../../domain/planParser';
 import { formatMinutes } from '../../domain/quickAddParser';
 import { formatDate, formatWeekRange, mondayOf, weekLabel } from '../../domain/week';
 import { useProjects } from '../../hooks/useData';
 import { useToday } from '../../hooks/useToday';
+import { InboxPanel } from './InboxPanel';
 
 export default function ImportPage() {
   const [text, setText] = useState('');
+  /** The inbox pack loaded into the editor; importing resolves it. */
+  const [fromPack, setFromPack] = useState<InboxPack | null>(null);
   const deferred = useDeferredValue(text);
   const today = useToday();
   const { projects } = useProjects();
@@ -54,14 +60,53 @@ export default function ImportPage() {
     }
   };
 
+  const editText = (v: string) => {
+    setText(v);
+    if (!v.trim()) setFromPack(null);
+  };
+
+  const reviewPack = (pack: InboxPack) => {
+    const previous = text;
+    if (previous.trim() && !fromPack) {
+      toast({
+        message: 'Your pasted plan was replaced.',
+        action: { label: 'Restore', onClick: () => editText(previous) },
+        duration: 8000,
+      });
+    }
+    setText(splitInboxPack(pack.text).plan);
+    setSel(null);
+    setFromPack(pack);
+    previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const dismissPack = async (pack: InboxPack) => {
+    if (fromPack?.name === pack.name) editText('');
+    await resolvePack(pack.name);
+    toast({
+      message: 'Dismissed.',
+      action: { label: 'Undo', onClick: () => void restorePack(pack) },
+    });
+  };
+
   const doImport = async () => {
     if (!plan) return;
+    const pack = fromPack;
     const { batch, big3Dropped } = await commitImport(plan, keys, text);
+    if (pack) await resolvePack(pack.name);
     setText('');
     setSel(null);
+    setFromPack(null);
     toast({
-      message: `Imported ${batch.created.tasks.length} tasks${big3Dropped ? ` (${big3Dropped} Big 3 already full)` : ''}.`,
-      action: { label: 'Undo', onClick: () => void undoImport(batch.id) },
+      message: `Imported ${plural(batch.created.tasks.length, 'task')}${pack ? ' from your inbox' : ''}${big3Dropped ? ` (${big3Dropped} Big 3 already full)` : ''}.`,
+      action: {
+        label: 'Undo',
+        onClick: () =>
+          void (async () => {
+            await undoImport(batch.id);
+            if (pack) await restorePack(pack);
+          })(),
+      },
       duration: 8000,
     });
   };
@@ -94,6 +139,12 @@ export default function ImportPage() {
         </Button>
       </header>
 
+      <InboxPanel
+        active={fromPack?.name}
+        onReview={reviewPack}
+        onDismiss={(p) => void dismissPack(p)}
+      />
+
       <ol className="grid gap-1 rounded-xl border border-border bg-surface p-4 text-[13px] text-muted sm:grid-cols-3">
         <li>
           <span className="font-semibold text-fg">1.</span> In your Claude chat, paste the copied
@@ -115,7 +166,7 @@ export default function ImportPage() {
             aria-label="Plan to import (Markdown or JSON)"
             rows={18}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => editText(e.target.value)}
             placeholder={PLAN_EXAMPLE}
             className="font-mono text-[12.5px]"
             spellCheck={false}
@@ -130,7 +181,7 @@ export default function ImportPage() {
             >
               Parse
             </Button>
-            <Button variant="ghost" disabled={!text} onClick={() => setText('')}>
+            <Button variant="ghost" disabled={!text} onClick={() => editText('')}>
               Clear
             </Button>
           </div>
@@ -269,9 +320,9 @@ export default function ImportPage() {
                   onClick={() => void doImport()}
                   className="justify-self-start"
                 >
-                  <Check size={15} /> Import {counts.tasks} tasks
-                  {counts.milestones ? `, ${counts.milestones} milestones` : ''}
-                  {counts.projects ? `, ${counts.projects} new projects` : ''}
+                  <Check size={15} /> Import {plural(counts.tasks, 'task')}
+                  {counts.milestones ? `, ${plural(counts.milestones, 'milestone')}` : ''}
+                  {counts.projects ? `, ${plural(counts.projects, 'new project')}` : ''}
                 </Button>
               ) : null}
             </>
@@ -282,6 +333,10 @@ export default function ImportPage() {
       <RecentImports />
     </section>
   );
+}
+
+function plural(n: number, word: string): string {
+  return `${n} ${word}${n === 1 ? '' : 's'}`;
 }
 
 function groupByWeek<T extends { t: { weekStart?: string } }>(items: T[]): [string, T[]][] {

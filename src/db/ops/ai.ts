@@ -62,6 +62,7 @@ export async function loadSnapshot(now: Date = new Date()): Promise<Snapshot> {
         milestones,
         tasks,
         cards,
+        brain: { about: settings.brainAbout, agenda: settings.brainAgenda },
         stats: {
           streak: streak.count,
           longestStreak: Math.max(settings.longestStreak, streak.count),

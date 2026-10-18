@@ -33,6 +33,8 @@ e2e/             Playwright smoke test
 - Never hardcode `/` asset paths: use relative paths or `import.meta.env.BASE_URL`.
 - Copy is calm and forgiving. No guilt or shaming language.
 - Pair project color with the project emoji; never rely on color alone.
+- Commits are authored as VJ (`Vejay Suriyaa Senguttuvan <256249948+vejaysuriyaa-07@users.noreply.github.com>`)
+  and carry no `Co-Authored-By` or session trailers. Never put personal data (email, calendar) in this repo.
 
 ## Commands
 

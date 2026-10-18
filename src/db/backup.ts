@@ -48,10 +48,11 @@ export async function exportBackup(
       const data = Object.fromEntries(
         await Promise.all(TABLE_NAMES.map(async (n) => [n, await db.table(n).toArray()] as const)),
       ) as Backup['data'];
-      // The Anthropic API key stays out of backups unless explicitly included.
-      if (!opts.includeApiKey) {
-        data.settings = data.settings.map(({ aiApiKey: _key, ...rest }) => rest);
-      }
+      // The Anthropic API key stays out of backups unless explicitly included; the inbox token
+      // always does (it's read-only and quick to recreate).
+      data.settings = data.settings.map(({ aiApiKey, inboxToken: _token, ...rest }) =>
+        opts.includeApiKey && aiApiKey !== undefined ? { ...rest, aiApiKey } : rest,
+      );
       return { app: 'posedge', schemaVersion: SCHEMA_VERSION, exportedAt: now.toISOString(), data };
     },
   );

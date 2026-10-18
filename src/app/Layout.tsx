@@ -14,6 +14,7 @@ import { QuickAddDialog } from './QuickAdd';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { useUi } from './ui';
+import { useScrollReset } from './useScrollReset';
 import { useStartup } from './useStartup';
 import { WeeklyReviewBanner } from './WeeklyReviewBanner';
 import { WelcomeDialog } from './WelcomeDialog';
@@ -53,6 +54,7 @@ function GlobalHotkeys() {
 
 export function Layout() {
   useStartup();
+  useScrollReset();
   return (
     <div className="flex min-h-dvh">
       <a

@@ -38,6 +38,9 @@ export const SUGGESTIONS = [
   { q: "How's my DV prep going?", icon: Target },
 ] as const;
 
+/** Swapped in for "What's due this week?" once the inbox has delivered an agenda. */
+const AGENDA_SUGGESTION = { q: "What's on my calendar tomorrow?", icon: CalendarClock } as const;
+
 const RELATED = [
   'What should I study today?',
   "What's due this week?",
@@ -227,7 +230,13 @@ export default function BrainPage() {
   }, [expanded, closeExpanded]);
 
   const asked = new Set(exchanges.map((x) => x.question));
-  const related = RELATED.filter((q) => !asked.has(q)).slice(0, 3);
+  const hasAgenda = !!settings.brainAgenda;
+  const related = (hasAgenda ? [AGENDA_SUGGESTION.q, ...RELATED] : RELATED)
+    .filter((q) => !asked.has(q))
+    .slice(0, 3);
+  const suggestions = hasAgenda
+    ? SUGGESTIONS.map((x) => (x.q === "What's due this week?" ? AGENDA_SUGGESTION : x))
+    : SUGGESTIONS;
   const readingLabel = `Reading ${reads.projects} project${reads.projects === 1 ? '' : 's'} and ${
     reads.tasks
   } open task${reads.tasks === 1 ? '' : 's'}…`;
@@ -379,7 +388,7 @@ export default function BrainPage() {
             ) : null}
             {ai.available ? (
               <ul className="mt-5 grid w-full gap-2 sm:grid-cols-2" aria-label="Suggestions">
-                {SUGGESTIONS.map(({ q, icon: Icon }) => (
+                {suggestions.map(({ q, icon: Icon }) => (
                   <li key={q}>
                     <button
                       type="button"

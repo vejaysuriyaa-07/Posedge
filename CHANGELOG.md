@@ -26,8 +26,24 @@ All notable changes to Posedge. Dates are local (America/Los_Angeles).
   model id, this month's token usage, read-aloud, and an opt-in to include the key in backups.
 - Navigation: Brain in the sidebar and More, `G` then `B`, the command palette, and `/` to ask.
 
+### Inbox: Gmail and Calendar
+
+- A daily check of your USC email and calendar writes suggestions to a private GitHub repo. Posedge picks
+  them up for you to review; nothing is added on its own.
+- **Import > From your inbox:** each suggestion pack shows its date and a short summary. Review opens it in
+  the usual import preview; importing or dismissing both have undo.
+- A **Today** banner shows when new suggestions are waiting.
+- **Settings > Inbox:** repository, read-only GitHub token, Check now, status, and a view of what EDGE
+  knows from your profile and agenda.
+- EDGE can answer schedule questions from your agenda ("What's on my calendar tomorrow?").
+
 ### Fixes
 
+- New pages open at the top instead of keeping the last page's scroll; back and forward return to where you
+  were.
+- Settings > AI no longer shows an empty key field when Settings is opened directly.
+- Import says "1 task" and "1 new project" instead of "1 tasks".
+- Keyboard drag on the Week board: Left from a busy Sunday now moves to Saturday instead of the backlog.
 - The project page no longer scrolls sideways on phones.
 - Settings: daily capacity inputs are readable on phones, and the storage note no longer squeezes beside
   its button.

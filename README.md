@@ -158,6 +158,27 @@ subscription; Settings shows this month's token count. Nothing is sent until you
 compact snapshot: projects, milestones, current tasks, recent card prompts and your stats. EDGE can't change
 your data yet; it tells you the quickest way to do it.
 
+## Inbox: email and calendar suggestions
+
+A daily Claude routine reads your email and calendar (read only) and writes suggestions to a **private**
+GitHub repository. Posedge reads them from there and never adds anything until you review it.
+
+- **Suggestion packs** (`inbox/YYYY-MM-DD.md`) are ordinary import Markdown with a short summary on top.
+  They appear on the Import page under **From your inbox** and in a banner on Today. **Review** opens a pack
+  in the import preview, where you untick what you don't want and import (with undo).
+- **`agenda.md`** (the next ~10 days) and **`me.md`** (profile notes) are sent to EDGE so it can answer
+  "What's on my calendar tomorrow?".
+
+To connect it:
+
+1. Create a private repository (for example `posedge-brain`) for the routine to write to.
+2. Create a [fine-grained token](https://github.com/settings/personal-access-tokens/new) with access to
+   that repository only and **Contents: Read-only**.
+3. In **Settings > Inbox**, enter `owner/name`, paste the token, and press **Check now**.
+
+Posedge checks when it opens and about once an hour. The token stays in this browser, goes only to
+`api.github.com`, and is never included in backups.
+
 ## Quick Add tokens
 
 `~90m` `~2h` `~1.5h` estimate · `!1` `!2` `!3` priority · `#learn` learning task · `#big3` Big 3 ·

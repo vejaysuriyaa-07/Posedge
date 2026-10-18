@@ -194,7 +194,7 @@ Ambiguities resolved while building Posedge, and any deviations from [`SPEC.md`]
     fonts, no scanlines. Project color is always paired with the emoji.
 50. **Access.** `G` then `B` opens the Brain, and `/` focuses the ask box. The canvas has a text summary, and
     the project chips under the graph are the keyboard route to the same project card.
-51. **Not deployed yet.** The Brain lives on the session branch. GitHub Pages is updated only after VJ's OK.
+51. **Deploys wait for VJ's OK.** The Brain went live on GitHub Pages on 2026-10-17, after he said to deploy.
 52. **Layout sweep.** A Playwright sweep of every page at 390px and 1440px (overflow check plus screenshots)
     found and fixed:
     - the project page scrolling sideways on phones: top-level page grids now use `grid-cols-1`, so
@@ -220,6 +220,51 @@ Ambiguities resolved while building Posedge, and any deviations from [`SPEC.md`]
     - **Small fixes:** duplicate ids on the two follow-up boxes (now `useId`), a stale tooltip after its
       node was filtered out, stale dates on reused nodes, plurals in "Reading…", the source count
       including items not in the graph, and Rewrite now stops the old answer being read aloud.
+
+## Inbox: Gmail and Calendar
+
+54. **A brain repo between the mail and the app.** VJ approved reading his USC Gmail and Calendar.
+    Posedge is a static site with no server, so the browser can't use Google sign-in for this. Instead,
+    a daily Claude routine reads both (read only) and writes to a private GitHub repo,
+    `posedge-brain`:
+    - `inbox/YYYY-MM-DD.md` suggestion packs;
+    - `agenda.md`, the next ~10 days;
+    - `me.md`, durable profile notes;
+    - `state.json` and `INSTRUCTIONS.md`, for the routine itself.
+
+    No personal data goes into the public Posedge repo.
+
+55. **Packs are plain import Markdown.** A pack is the format the Import page already parses, so the
+    existing preview, untick and undo apply unchanged. Lines before the first `# Project:` are a short
+    summary. Each task's notes carry the facts and a `Source:` line with the Gmail link.
+56. **Read-only fetch from the browser.** Posedge reads the repo through the GitHub contents API (raw
+    media type) with a fine-grained token that can only read that repo's contents.
+    - The token is never in backups, unlike the AI key, which has an opt-in; it's quick to recreate.
+    - Posedge checks on launch, hourly while open, when you come back after 30 minutes, and when you're
+      back online after a failed check. Concurrent checks share one request.
+    - Packs older than 14 days are never fetched, and at most 10 come in per check.
+    - Errors (bad token, no access, rate limit, offline) are stored and shown calmly in Settings.
+57. **Review stays manual.** Packs wait on the Import page ("From your inbox") and in a Today banner.
+    - **Review** loads the pack into the editor. If you had pasted a plan, a toast offers to restore it.
+    - Importing marks the pack as seen, and Undo puts it back. Dismiss also has undo.
+    - A background check toasts only away from Settings and Import, which show results inline.
+    - Changing the repo forgets everything that came from the previous one.
+58. **EDGE gets the agenda.** `me.md` (2,500 characters) and `agenda.md` (5,000) are stored in settings
+    and sent in the snapshot as `about` and `agenda`. EDGE uses them for schedule questions without
+    citing them, and the first suggestion becomes "What's on my calendar tomorrow?" when an agenda exists.
+59. **Fixes found on the way.**
+    - Settings > AI could show an empty key field when Settings was opened directly: the form copied
+      settings before they loaded. The AI and Inbox sections now render once settings have loaded.
+    - Moving between pages kept the previous page's scroll offset, so pages opened scrolled down. New
+      pages now open at the top, and back/forward restores the old offset once the page is tall enough
+      (`useScrollReset`).
+    - The import button and toast now use singular forms ("1 task", "1 new project").
+    - Keyboard drag: Left from a long Sunday column went to the Backlog instead of Saturday, because the
+      tall empty Saturday column lost on corner distance to small Backlog cards. Left/Right now pick the
+      nearest column in that direction first, then the closest spot in it. Checked by keyboard between
+      every pair of days and on a project board.
+60. **Commit authorship.** At VJ's request, commits are authored as VJ and carry no AI co-author or
+    session lines.
 
 ## Feature checklist (SPEC.md, re-read at the end of Phase 3)
 

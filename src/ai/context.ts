@@ -1,4 +1,5 @@
 import type { Milestone, Project, ReviewCard, Settings, Task } from '../db/types';
+import { ABOUT_MAX_CHARS, AGENDA_MAX_CHARS, capText } from '../domain/inbox';
 import { addDaysStr, addWeeksStr, dateOfIso, mondayOf } from '../domain/week';
 
 /** Rough token estimate for JSON text (Claude averages ~3.5-4 chars per token; be conservative). */
@@ -28,6 +29,8 @@ export interface SnapshotInput {
   tasks: Task[];
   cards: Pick<ReviewCard, 'prompt' | 'createdAt'>[];
   stats?: SnapshotStats;
+  /** Notes from the brain repo: me.md and agenda.md. */
+  brain?: { about?: string; agenda?: string };
 }
 
 export interface SnapshotTask {
@@ -64,6 +67,10 @@ export interface Snapshot {
   milestones: { id: string; projectId: string; title: string; weekStart: string; done: boolean }[];
   tasks: SnapshotTask[];
   recentCardPrompts: string[];
+  /** VJ's notes about himself, from the brain repo. */
+  about?: string;
+  /** Calendar and email digest for the coming days, refreshed by the daily inbox check. */
+  agenda?: string;
   /** Present when the cap forced trimming. */
   trimmed?: { doneTasks: number; cardPrompts: number; otherTasks: number };
 }
@@ -151,6 +158,10 @@ export function buildSnapshot(input: SnapshotInput, cap = SNAPSHOT_TOKEN_CAP): S
       .slice(0, 50)
       .map((c) => c.prompt),
   };
+  const about = input.brain?.about?.trim();
+  const agenda = input.brain?.agenda?.trim();
+  if (about) snapshot.about = capText(about, ABOUT_MAX_CHARS);
+  if (agenda) snapshot.agenda = capText(agenda, AGENDA_MAX_CHARS);
   return trimSnapshot(snapshot, cap);
 }
 

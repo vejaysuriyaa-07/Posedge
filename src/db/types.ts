@@ -209,6 +209,14 @@ export type ImportBatch = z.infer<typeof ImportBatchSchema>;
 export const ThemeSchema = z.enum(['dark', 'light', 'system']);
 export type Theme = z.infer<typeof ThemeSchema>;
 
+export const InboxPackSchema = z.object({
+  /** File name in the repo's inbox/ folder, e.g. "2026-10-18.md". */
+  name: z.string().min(1),
+  text: z.string(),
+  fetchedAt: TimestampSchema,
+});
+export type InboxPack = z.infer<typeof InboxPackSchema>;
+
 export const SettingsSchema = z.object({
   id: z.literal('settings'),
   theme: ThemeSchema,
@@ -260,6 +268,22 @@ export const SettingsSchema = z.object({
       requests: z.number(),
     })
     .optional(),
+  /**
+   * Inbox: suggestion packs written to a private GitHub repo by a daily Gmail/Calendar check.
+   * The token is read-only, stays in this browser (never in backups) and only goes to api.github.com.
+   */
+  inboxRepo: z.string(),
+  inboxToken: z.string().optional(),
+  inboxCheckedAt: TimestampSchema.optional(),
+  /** Message from the last failed check; cleared by a successful one. */
+  inboxError: z.string().optional(),
+  /** Pack file names already applied or dismissed. */
+  inboxSeen: z.array(z.string()),
+  /** Packs fetched and waiting for review. */
+  inboxPending: z.array(InboxPackSchema),
+  /** Profile notes (me.md) and the upcoming agenda (agenda.md) from the brain repo, for EDGE. */
+  brainAbout: z.string().optional(),
+  brainAgenda: z.string().optional(),
 });
 export type Settings = z.infer<typeof SettingsSchema>;
 
@@ -289,4 +313,7 @@ export const DEFAULT_SETTINGS: Settings = {
   aiModel: 'claude-sonnet-5-5',
   aiKeyInBackup: false,
   aiVoiceReplies: false,
+  inboxRepo: 'vejaysuriyaa-07/posedge-brain',
+  inboxSeen: [],
+  inboxPending: [],
 };
